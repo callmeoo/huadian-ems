@@ -89,6 +89,8 @@ const CATEGORY_COLOR: Record<string, { bg: string; text: string }> = {
   "系统通知": { bg: "#f5f7fa", text: "#595959" },
 };
 
+const CATEGORIES = ["超标预警", "系统维护", "合规提醒", "培训通知", "系统通知"] as const;
+
 export default function NotificationsPage() {
   const [tab, setTab] = useState<"all" | "unread" | "read">("all");
   const [search, setSearch] = useState("");
@@ -97,6 +99,7 @@ export default function NotificationsPage() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [readIds, setReadIds] = useState<Set<number>>(new Set());
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   useEffect(() => {
     setReadIds(getReadIds());
@@ -138,6 +141,10 @@ export default function NotificationsPage() {
     if (tab === "unread") list = list.filter((n) => !readIds.has(n.id));
     if (tab === "read")   list = list.filter((n) =>  readIds.has(n.id));
 
+    if (activeCategory) {
+      list = list.filter((n) => n.category === activeCategory);
+    }
+
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
@@ -155,7 +162,16 @@ export default function NotificationsPage() {
 
     list.sort((a, b) => b.time.localeCompare(a.time));
     return list;
-  }, [tab, search, dateStart, dateEnd, readIds]);
+  }, [tab, search, dateStart, dateEnd, readIds, activeCategory]);
+
+  const categoryCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const c of CATEGORIES) map[c] = 0;
+    for (const n of NOTIFICATIONS) {
+      if (map[n.category] !== undefined) map[n.category] += 1;
+    }
+    return map;
+  }, []);
 
   return (
     <div
@@ -393,6 +409,62 @@ export default function NotificationsPage() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* ── Category chips ── */}
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          padding: "8px 14px 4px",
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+        }}
+      >
+        <button
+          onClick={() => setActiveCategory(null)}
+          style={{
+            flexShrink: 0,
+            padding: "5px 12px",
+            borderRadius: 14,
+            border: activeCategory === null ? "1px solid #1677ff" : "1px solid #ebeef2",
+            background: activeCategory === null ? "#1677ff" : "#fff",
+            color: activeCategory === null ? "#fff" : "#6b7a8c",
+            fontSize: 12,
+            fontWeight: 500,
+            cursor: "pointer",
+            outline: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          全部分类
+        </button>
+        {CATEGORIES.map((c) => {
+          const active = activeCategory === c;
+          const style = CATEGORY_COLOR[c];
+          return (
+            <button
+              key={c}
+              onClick={() => setActiveCategory(active ? null : c)}
+              style={{
+                flexShrink: 0,
+                padding: "5px 12px",
+                borderRadius: 14,
+                border: `1px solid ${active ? style.text : "#ebeef2"}`,
+                background: active ? style.bg : "#fff",
+                color: active ? style.text : "#6b7a8c",
+                fontSize: 12,
+                fontWeight: active ? 600 : 500,
+                cursor: "pointer",
+                outline: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {c}（{categoryCounts[c]}）
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Notification list ── */}
