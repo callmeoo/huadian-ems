@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>后台 PC 端 · 页面目录</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #f5f9fd 0%, #e6f0fa 100%);
+      min-height: 100vh;
+      color: #1a1a1a;
+      padding: 40px 24px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #1677ff;
+      text-decoration: none;
+      font-size: 14px;
+      padding: 8px 16px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(10,69,149,0.06);
+    }
+    .back-link::before { content: "‹"; font-size: 18px; line-height: 1; }
+
+    h1 {
+      font-size: 24px;
+      color: #1677ff;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #6b7a8c;
+      margin-bottom: 32px;
+    }
+
+    .empty-state {
+      background: #fff;
+      border-radius: 16px;
+      padding: 80px 40px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(10,69,149,0.06);
+      margin-bottom: 32px;
+    }
+    .empty-state .icon {
+      width: 100px; height: 100px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, #e6f0fa 0%, #f5f9fd 100%);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .empty-state .icon svg {
+      width: 56px; height: 56px;
+      color: #1677ff;
+      opacity: 0.5;
+    }
+    .empty-state h2 {
+      font-size: 20px;
+      color: #1677ff;
+      margin-bottom: 10px;
+    }
+    .empty-state p {
+      font-size: 14px;
+      color: #6b7a8c;
+      line-height: 1.8;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 14px;
+      color: #6b7a8c;
+      margin: 32px 0 16px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::before {
+      content: "";
+      width: 4px; height: 14px;
+      background: linear-gradient(180deg, #1677ff 0%, #0d52c4 100%);
+      border-radius: 2px;
+    }
+
+    .planned-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .planned-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(10,69,149,0.05);
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      opacity: 0.85;
+    }
+    .planned-card .ic {
+      width: 40px; height: 40px;
+      background: #1677ff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    .planned-card .ic svg { width: 22px; height: 22px; color: #fff; stroke: #fff; fill: none; stroke-width: 2; }
+    .planned-card .info { flex: 1; }
+    .planned-card .name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .planned-card .name .tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      background: #f5f5f5;
+      color: #8c8c8c;
+      border-radius: 10px;
+      font-weight: 400;
+    }
+    .planned-card .desc {
+      font-size: 12px;
+      color: #6b7a8c;
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #8090a8;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-nav">
+      <a class="back-link" href="../index.html">返回总目录</a>
+    </div>
+
+    <h1>后台 PC 端 · 页面目录</h1>
+    <div class="subtitle">管理后台 · 浏览器端 · 用于系统配置、阈值管理、数据对接、报表导出</div>
+
+    <div class="empty-state">
+      <div class="icon">
+        <i data-lucide="monitor"></i>
+      </div>
+      <h2>PC 后台原型设计中</h2>
+      <p>当前优先级是 APP 端的核心页面。PC 后台规划如下，等 APP 主线确定后会陆续补齐。下方为已规划的页面清单，欢迎您提前提需求。</p>
+    </div>
+
+    <div class="section-title">已规划页面</div>
+    <div class="planned-grid">
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="monitor-dot"></i></div>
+        <div class="info">
+          <div class="name">实时大屏 <span class="tag">待设计</span></div>
+          <div class="desc">集团/电厂/机组三级总览，墙面投屏</div>
+        </div>
+      </div>
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="sliders-horizontal"></i></div>
+        <div class="info">
+          <div class="name">阈值规则管理 <span class="tag">待设计</span></div>
+          <div class="desc">按机组/指标配置多级阈值、生效时段</div>
+        </div>
+      </div>
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="users"></i></div>
+        <div class="info">
+          <div class="name">用户与角色 <span class="tag">待设计</span></div>
+          <div class="desc">用户管理、角色权限、菜单可见性</div>
+        </div>
+      </div>
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="factory"></i></div>
+        <div class="info">
+          <div class="name">机组档案 <span class="tag">待设计</span></div>
+          <div class="desc">机组/电厂/排放口/数采仪基础信息维护</div>
+        </div>
+      </div>
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="plug-zap"></i></div>
+        <div class="info">
+          <div class="name">数据源接入 <span class="tag">待设计</span></div>
+          <div class="desc">爬虫/API 配置、字段映射、健康检查</div>
+        </div>
+      </div>
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="file-text"></i></div>
+        <div class="info">
+          <div class="name">报表中心 <span class="tag">待设计</span></div>
+          <div class="desc">日/周/月报、导出 Excel / PDF</div>
+        </div>
+      </div>
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="alert-triangle"></i></div>
+        <div class="info">
+          <div class="name">报警事件管理 <span class="tag">待设计</span></div>
+          <div class="desc">事件列表、责任分派、整改闭环</div>
+        </div>
+      </div>
+      <div class="planned-card">
+        <div class="ic"><i data-lucide="history"></i></div>
+        <div class="info">
+          <div class="name">审计日志 <span class="tag">待设计</span></div>
+          <div class="desc">操作记录、登录日志、配置变更追溯</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">华电新能源 · PC 后台原型 · V0.1</div>
+  </div>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APP 端 · 页面目录</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+
+    /* ── Top nav ── */
+    .top-bar {
+      background: linear-gradient(160deg, #0062d4 0%, #007AFF 55%, #2ca5ff 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 14px 24px 20px;
+    }
+    .top-bar::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(100,200,255,0.22) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity: 0.4;
+    }
+    .top-bar-inner {
+      position: relative;
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.25); }
+    .page-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .page-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 2px;
+    }
+
+    /* ── Tab nav ── */
+    .tab-nav {
+      background: #fff;
+      border-bottom: 1px solid #ebeef2;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(10,69,149,0.06);
+    }
+    .tab-nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px 10px;
+      text-decoration: none;
+      color: #8090a8;
+      font-size: 12px;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.18s;
+    }
+    .tab-item:hover { color: #1677ff; }
+    .tab-item.active {
+      color: #1677ff;
+      border-bottom-color: #1677ff;
+    }
+    .tab-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tab-item.active .tab-icon { background: #e6f4ff; }
+
+    /* ── Body ── */
+    .body {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+
+    /* ── Section ── */
+    .section {
+      padding-top: 28px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-bar {
+      width: 3px; height: 16px;
+      background: linear-gradient(180deg, #1677ff 0%, #0d52c4 100%);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .section-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: 0.3px;
+    }
+    .section-count {
+      font-size: 12px;
+      color: #8090a8;
+      margin-left: 2px;
+    }
+    .section-icon-wrap {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      background: #e6f4ff;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .grid-single {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Page card ── */
+    .page-card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 2px 10px rgba(10,69,149,0.06);
+      transition: transform 0.18s, box-shadow 0.18s;
+      border: 1px solid rgba(10,69,149,0.05);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+    }
+    .page-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(10,69,149,0.12);
+    }
+    .page-card.todo {
+      opacity: 0.55;
+      pointer-events: none;
+    }
+    .card-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: #e6f4ff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-icon svg { width: 22px; height: 22px; }
+    .page-card.todo .card-icon { background: #f0f3f7; }
+    .card-body { flex: 1; min-width: 0; }
+    .card-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 8px;
+      font-weight: 400;
+    }
+    .tag.done { background: #e6f4ff; color: #1677ff; }
+    .tag.todo { background: #f5f5f5; color: #8c8c8c; }
+    .card-desc {
+      font-size: 11px;
+      color: #8090a8;
+      margin-top: 3px;
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-arrow {
+      color: #c8d3e0;
+      flex-shrink: 0;
+    }
+    .page-card:hover .card-arrow { color: #1677ff; }
+
+    /* ── Divider ── */
+    .section-divider {
+      height: 1px;
+      background: #ebeef2;
+      margin-top: 28px;
+    }
+
+    @media (max-width: 600px) {
+      .body { padding: 0 16px 60px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <a class="back-link" href="../index.html">
+        <i data-lucide="chevron-left" style="width:14px;height:14px;"></i>
+        总目录
+      </a>
+      <div>
+        <div class="page-title">APP 端 · 页面目录</div>
+        <div class="page-sub">点击已完成页面 → 跳转 localhost:3000 真实页面</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab nav -->
+  <nav class="tab-nav">
+    <div class="tab-nav-inner">
+      <a class="tab-item active" href="#workbench">
+        <div class="tab-icon"><i data-lucide="layout-dashboard" style="width:16px;height:16px;color:#1677ff;"></i></div>
+        工作台
+      </a>
+      <a class="tab-item" href="#verification">
+        <div class="tab-icon"><i data-lucide="clipboard-check" style="width:16px;height:16px;"></i></div>
+        核验
+      </a>
+      <a class="tab-item" href="#training">
+        <div class="tab-icon"><i data-lucide="book-open" style="width:16px;height:16px;"></i></div>
+        培训
+      </a>
+      <a class="tab-item" href="#profile">
+        <div class="tab-icon"><i data-lucide="user" style="width:16px;height:16px;"></i></div>
+        我
+      </a>
+    </div>
+  </nav>
+
+  <div class="body">
+
+    <!-- ══ 工作台首页入口 ══ -->
+    <div style="padding-top:20px; margin-bottom:4px;">
+      <a href="http://localhost:3000/" target="_blank" style="
+        display:flex; align-items:center; gap:14px;
+        background:linear-gradient(135deg,#0062d4 0%,#007AFF 55%,#2ca5ff 100%);
+        border-radius:14px; padding:16px 18px;
+        text-decoration:none; color:#fff;
+        box-shadow:0 6px 20px rgba(10,69,149,0.22);
+        position:relative; overflow:hidden;
+      ">
+        <div style="
+          position:absolute;inset:0;
+          background-image:radial-gradient(circle,rgba(100,200,255,0.22) 1px,transparent 1px);
+          background-size:22px 22px;opacity:0.4;pointer-events:none;
+        "></div>
+        <div style="
+          width:48px;height:48px;border-radius:14px;
+          background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);
+          display:flex;align-items:center;justify-content:center;flex-shrink:0;
+          position:relative;
+        ">
+          <i data-lucide="layout-dashboard" style="width:24px;height:24px;color:#fff;"></i>
+        </div>
+        <div style="flex:1;min-width:0;position:relative;">
+          <div style="font-size:16px;font-weight:700;letter-spacing:0.3px;">工作台首页 · 全景</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:3px;">
+            Hero + 快捷统计 + 模块宫格 + 告警列表 + 底部 Tab 栏
+          </div>
+        </div>
+        <i data-lucide="chevron-right" style="width:18px;height:18px;color:rgba(255,255,255,0.6);flex-shrink:0;position:relative;"></i>
+      </a>
+    </div>
+
+    <!-- ══ 工作台 ══ -->
+    <div class="section" id="workbench">
+      <div class="section-header">
+        <div class="section-bar"></div>
+        <span class="section-name">工作台 · 分支页面</span>
+        <span class="section-count">11 个页面 · 7 已完成 · 3 待开发 · 1 原型</span>
+      </div>
+      <div class="grid">
+
+        <a class="page-card" href="http://localhost:3000/enterprise" target="_blank">
+          <div class="card-icon" style="background:#e0f7ff;">
+            <i data-lucide="building-2" style="color:#0091c7;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">企业档案 <span class="tag done">已完成</span></div>
+            <div class="card-desc">企业信息、排污许可证、排放口配置</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <a class="page-card" href="http://localhost:3000/anomaly" target="_blank">
+          <div class="card-icon" style="background:#fff7e0;">
+            <i data-lucide="alert-triangle" style="color:#d46b08;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">超标异常 <span class="tag done">已完成</span></div>
+            <div class="card-desc">异常/超标/超限值/缺失分类列表</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <a class="page-card" href="http://localhost:3000/stats" target="_blank">
+          <div class="card-icon" style="background:#f0fff4;">
+            <i data-lucide="pie-chart" style="color:#389e0d;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">数据统计 <span class="tag done">已完成</span></div>
+            <div class="card-desc">4 大类指标，可类型筛选，点数值进详情</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <a class="page-card" href="http://localhost:3000/control" target="_blank">
+          <div class="card-icon" style="background:#fff0f0;">
+            <i data-lucide="shield-check" style="color:#cf1322;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">超标管控 <span class="tag done">已完成</span></div>
+            <div class="card-desc">小时/日管控阀值、超标数值高亮</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <a class="page-card" href="http://localhost:3000/emission" target="_blank">
+          <div class="card-icon" style="background:#f0fff4;">
+            <i data-lucide="bar-chart-3" style="color:#389e0d;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">排放量统计 <span class="tag done">已完成</span></div>
+            <div class="card-desc">废气/废水汇总、按排放口拆分</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <a class="page-card" href="http://localhost:3000/bookmark" target="_blank">
+          <div class="card-icon" style="background:#e6f4ff;">
+            <i data-lucide="bookmark-check" style="color:#1677ff;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">标记查阅 <span class="tag done">已完成</span></div>
+            <div class="card-desc">工况标记列表、按监控点/类型筛选</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <a class="page-card" href="http://localhost:3000/gauge" target="_blank">
+          <div class="card-icon" style="background:#e6fffb;">
+            <i data-lucide="gauge" style="color:#08979c;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">有效传输率 <span class="tag done">已完成</span></div>
+            <div class="card-desc">即时与补全传输率、监控点逐一展示</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <div class="page-card todo">
+          <div class="card-icon">
+            <i data-lucide="hard-drive" style="color:#8090a8;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">设备管理 <span class="tag todo">待设计</span></div>
+            <div class="card-desc">监控设备台账、运行状态追踪</div>
+          </div>
+        </div>
+
+        <div class="page-card todo">
+          <div class="card-icon">
+            <i data-lucide="package" style="color:#8090a8;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">备件台账 <span class="tag todo">待设计</span></div>
+            <div class="card-desc">备件库存、领用记录、预警库存</div>
+          </div>
+        </div>
+
+        <a class="page-card" href="http://localhost:3000/notifications" target="_blank">
+          <div class="card-icon" style="background:#fff0f0;">
+            <i data-lucide="bell" style="color:#cf1322;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">工作通知 <span class="tag done">已完成</span></div>
+            <div class="card-desc">站内消息、待办提醒、公告推送</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+        <a class="page-card" href="monitoring-report.html" target="_blank">
+          <div class="card-icon" style="background:#f0fff4;">
+            <i data-lucide="file-bar-chart" style="color:#389e0d;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">监测报表 <span class="tag" style="background:#fff7e0;color:#d46b08;">原型</span></div>
+            <div class="card-desc">日/月/季/年报，多级表头，横向滚动，导出</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- ══ 核验 ══ -->
+    <div class="section" id="verification">
+      <div class="section-header">
+        <div class="section-bar"></div>
+        <span class="section-name">核验</span>
+        <span class="section-count">1 个页面 · 1 已完成</span>
+      </div>
+      <div class="grid">
+        <a class="page-card" href="http://localhost:3000/verification" target="_blank">
+          <div class="card-icon" style="background:#e6fffb;">
+            <i data-lucide="clipboard-check" style="color:#08979c;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">核验 <span class="tag done">已完成</span></div>
+            <div class="card-desc">第三方比对监测报告、质量判定、10天到期预警</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- ══ 培训 ══ -->
+    <div class="section" id="training">
+      <div class="section-header">
+        <div class="section-bar"></div>
+        <span class="section-name">培训</span>
+        <span class="section-count">1 个页面 · 1 已完成</span>
+      </div>
+      <div class="grid">
+        <a class="page-card" href="http://localhost:3000/training" target="_blank">
+          <div class="card-icon" style="background:#f5f0ff;">
+            <i data-lucide="book-open" style="color:#531dab;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">培训 <span class="tag done">已完成</span></div>
+            <div class="card-desc">制度法规文件库、AI 题库、在线考试、成绩统计</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- ══ 我 ══ -->
+    <div class="section" id="profile">
+      <div class="section-header">
+        <div class="section-bar"></div>
+        <span class="section-name">我</span>
+        <span class="section-count">1 个页面 · 1 已完成</span>
+      </div>
+      <div class="grid">
+        <a class="page-card" href="http://localhost:3000/profile" target="_blank">
+          <div class="card-icon" style="background:#e6f4ff;">
+            <i data-lucide="user-circle" style="color:#1677ff;"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-name">个人中心 <span class="tag done">已完成</span></div>
+            <div class="card-desc">用户信息、服务监控点、子账户管理</div>
+          </div>
+          <i data-lucide="chevron-right" class="card-arrow" style="width:16px;height:16px;"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    lucide.createIcons();
+
+    // Tab highlight on scroll
+    const sections = ['workbench','verification','training','profile'];
+    const tabs = document.querySelectorAll('.tab-item');
+    window.addEventListener('scroll', () => {
+      let current = sections[0];
+      sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= 100) current = id;
+      });
+      tabs.forEach(t => {
+        const active = t.getAttribute('href') === '#' + current;
+        t.classList.toggle('active', active);
+        t.querySelector('.tab-icon').style.background = active ? '#e6f4ff' : '';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>环保管理平台 · 原型目录</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(ellipse at top left, rgba(0,160,233,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(10,69,149,0.08) 0%, transparent 50%),
+        linear-gradient(135deg, #f5f9fd 0%, #e6f0fa 100%);
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 60px 32px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+    .brand-mark {
+      width: 56px; height: 56px;
+      background: #1677ff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(10,69,149,0.25);
+    }
+    .brand-mark svg { width: 32px; height: 32px; color: #fff; stroke: #fff; fill: none; stroke-width: 2; }
+    .brand h1 {
+      font-size: 22px;
+      color: #1677ff;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .brand .sub {
+      font-size: 13px;
+      color: #6b7a8c;
+      margin-top: 2px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0a1628 0%, #0d3272 62%, #1460c8 100%);
+      border-radius: 20px;
+      padding: 40px 44px;
+      color: #fff;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(10,69,149,0.2);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero h2 {
+      font-size: 28px;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .hero p {
+      font-size: 14px;
+      opacity: 0.85;
+      line-height: 1.8;
+      max-width: 600px;
+      position: relative;
+    }
+    .hero .meta {
+      margin-top: 18px;
+      font-size: 12px;
+      opacity: 0.7;
+      letter-spacing: 1px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      color: #6b7a8c;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::before {
+      content: "";
+      width: 4px; height: 14px;
+      background: linear-gradient(180deg, #1677ff 0%, #0d52c4 100%);
+      border-radius: 2px;
+    }
+
+    .dir-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    /* Two-column layout: requirements left, prototype right */
+    .content-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 28px;
+      margin-bottom: 40px;
+      align-items: start;
+    }
+    .req-panel {
+      position: sticky;
+      top: 24px;
+    }
+    .req-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 22px;
+      box-shadow: 0 4px 20px rgba(10,69,149,0.06);
+      border: 1px solid rgba(10,69,149,0.06);
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+    }
+    .req-card::-webkit-scrollbar { width: 4px; }
+    .req-card::-webkit-scrollbar-thumb { background: #d0daea; border-radius: 2px; }
+    .req-meta {
+      font-size: 11px;
+      color: #8090a8;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ebeef2;
+      letter-spacing: 1px;
+    }
+    .req-section { margin-bottom: 14px; }
+    .req-section:last-child { margin-bottom: 0; }
+    .req-section-head {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1677ff;
+      margin-bottom: 5px;
+      padding-left: 8px;
+      border-left: 2px solid #1677ff;
+      line-height: 1.6;
+    }
+    .req-list { list-style: none; margin: 0; padding: 0; }
+    .req-list li {
+      font-size: 12px;
+      color: #4a5a6b;
+      line-height: 1.7;
+      padding: 2px 0 2px 14px;
+      position: relative;
+    }
+    .req-list li::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      color: #aabcc8;
+      font-weight: bold;
+    }
+    .proto-panel .dir-grid { grid-template-columns: 1fr; }
+
+    @media (max-width: 960px) {
+      .content-layout { grid-template-columns: 1fr; }
+      .req-panel { position: static; }
+      .req-card { max-height: 400px; }
+    }
+    @media (max-width: 720px) {
+      .proto-panel .dir-grid { grid-template-columns: 1fr; }
+      .page { padding: 32px 16px; }
+      .hero { padding: 28px 24px; }
+    }
+
+    .dir-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 20px rgba(10,69,149,0.06);
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid rgba(10,69,149,0.06);
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+    .dir-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(10,69,149,0.15);
+    }
+    .dir-card .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .dir-card .icon-box {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: #1677ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dir-card .icon-box svg { width: 30px; height: 30px; color: #fff; stroke: #fff; fill: none; stroke-width: 2; }
+    .dir-card .badge {
+      padding: 4px 10px;
+      background: #e6f4ff;
+      color: #1677ff;
+      font-size: 11px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    .dir-card .badge.todo {
+      background: #fff7e6;
+      color: #d46b08;
+    }
+    .dir-card h3 {
+      font-size: 20px;
+      color: #1677ff;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .dir-card p {
+      font-size: 13px;
+      color: #6b7a8c;
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+    .dir-card .stats {
+      display: flex;
+      gap: 20px;
+      padding-top: 18px;
+      border-top: 1px dashed #e6ecf3;
+    }
+    .dir-card .stat {
+      font-size: 12px;
+      color: #8090a8;
+    }
+    .dir-card .stat strong {
+      color: #1677ff;
+      font-size: 18px;
+      display: block;
+      font-weight: 700;
+    }
+    .dir-card .open {
+      position: absolute;
+      top: 32px; right: 32px;
+      font-size: 12px;
+      color: #1677ff;
+    }
+    .dir-card .open::after { content: " →"; }
+
+    .info-strip {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px 28px;
+      box-shadow: 0 2px 12px rgba(10,69,149,0.05);
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .info-strip .item {
+      flex: 1;
+      min-width: 200px;
+    }
+    .info-strip .item .k {
+      font-size: 12px;
+      color: #8090a8;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+    .info-strip .item .v {
+      font-size: 14px;
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #8090a8;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="brand">
+      <div class="brand-mark">
+        <i data-lucide="zap"></i>
+      </div>
+      <div>
+        <h1>环保管理平台</h1>
+        <div class="sub">CHINA HUADIAN · Environment Monitoring Platform</div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h2>机组环保数据监测 · 原型展示</h2>
+      <p>面向集团 → 电厂 → 机组三级体系，实时采集机组烟气数据（NOx / SO₂ / 烟尘 / O₂ / 流量 / 温度），提供异常预警、多级阈值报警、历史追溯与对外报表能力。</p>
+      <div class="meta">V0.1 · 2026-05</div>
+    </div>
+
+    <div class="section-title">项目要点</div>
+    <div class="info-strip" style="margin-bottom: 40px;">
+      <div class="item">
+        <div class="k">数据源</div>
+        <div class="v">网页爬取 / 10 秒采样</div>
+      </div>
+      <div class="item">
+        <div class="k">机组规模</div>
+        <div class="v">5 个机组 · 三级钻取</div>
+      </div>
+      <div class="item">
+        <div class="k">数据周期</div>
+        <div class="v">近 3 年</div>
+      </div>
+      <div class="item">
+        <div class="k">报警分级</div>
+        <div class="v">预警 / 告警 / 超标 / 缺失</div>
+      </div>
+      <div class="item">
+        <div class="k">通知通道</div>
+        <div class="v">APP / 短信 / 集团 IM / 小程序</div>
+      </div>
+    </div>
+
+    <div class="content-layout">
+      <!-- 左：原始需求说明 -->
+      <div class="req-panel">
+        <div class="section-title">原始需求说明</div>
+        <div class="req-card">
+          <div class="req-meta">2026-05-16 · 华电环保系统需求点整理</div>
+
+          <div class="req-section">
+            <div class="req-section-head">数据源（3 路）</div>
+            <ul class="req-list">
+              <li><strong>外部环保数据平台</strong> — NOx、O₂、温度、流量、压力；分钟 / 小时 / 日 / 月 / 季 / 年报</li>
+              <li><strong>集团环保数据平台</strong> — 数据字段同上</li>
+              <li><strong>SIS 系统</strong> — 机组负荷、脱硝数据；尿素用量 / 流量、空压机压力、SCR 前后 NOx 浓度等，作为辅助判定依据</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">一、数据质量与报警</div>
+            <ul class="req-list">
+              <li>分钟数据不变 / 小时无变化 → 报警</li>
+              <li>数值超标或不在正常运行范围 → 报警</li>
+              <li>对实时小时数据计算剩余安全值 → 预警</li>
+              <li>数据传输效率偏低 → 自动预警</li>
+              <li>报警阈值可配置（小时均值 / 分钟值 / 日值）</li>
+              <li>异常信息分类统计，支持时段筛选；以周报 / 月报 / 年报形式报送</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">二、CEMS 设备台账</div>
+            <ul class="req-list">
+              <li>记录安装时间、可用时间、已用时间</li>
+              <li>预期寿命更换提醒 + 维护 / 更换记录</li>
+              <li>设备型号、厂家、图纸、说明书、排故方法</li>
+              <li>备品备件台账（分类定额、采购时间、库存预警联动）</li>
+              <li>库存不足自动提醒采购；库存寿命超标提醒</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">三、自动化环保报表</div>
+            <ul class="req-list">
+              <li>从 3 路数据源 + 集团平台自动抓取数据生成报表</li>
+              <li>月报 / 季报 / 年报按固定模板自动填报</li>
+              <li>其他报表由各部门提供模板按需生成</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">四、企业环保信息管理</div>
+            <ul class="req-list">
+              <li>企业基本信息台账</li>
+              <li>排污许可证上传、变更台账管理</li>
+              <li>排污许可证信息展示</li>
+              <li>排放标准电子化展示（污染物指标、允许值、检测方法）</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">五、CEMS 定期工作管理</div>
+            <ul class="req-list">
+              <li>拍照识别工作记录并上传服务器</li>
+              <li>服务器按工作标准自动判定是否执行到位</li>
+              <li>到期提醒：每周提前 2 天 / 每月 5 天 / 每季 10 天</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">六、第三方比对监测管理</div>
+            <ul class="req-list">
+              <li>判定报告数据是否符合规范（方法、频次、数据）</li>
+              <li>建立台账历史记录（按年份 / 季度 / 机组上传）</li>
+              <li>废气 / 废水 / 噪声报告预警：每季度监测，提前 10 天提醒</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">七、预警发布通知平台</div>
+            <ul class="req-list">
+              <li>环保工作公告 / 通知发布</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">八、环保历史台账</div>
+            <ul class="req-list">
+              <li>历次环保检查问题整改台账</li>
+              <li>记录发生时间、整改情况、验收人、整改人、整改材料</li>
+              <li>实施闭环管理</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">九、环保培训</div>
+            <ul class="req-list">
+              <li>收集集团 / 国家环保制度及法规</li>
+              <li>自动生成题库，对环保人员进行在线培训</li>
+              <li>统计并记录培训成绩</li>
+            </ul>
+          </div>
+
+          <div class="req-section">
+            <div class="req-section-head">十、AI 应用探索（二期）</div>
+            <ul class="req-list">
+              <li>利用 AI 学习相关制度</li>
+              <li>上传集团 / 环保局案例，结合公司实际情况进行风险预警</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右：原型目录 -->
+      <div class="proto-panel">
+        <div class="section-title">原型目录</div>
+        <div class="dir-grid">
+          <a class="dir-card" href="app/index.html">
+            <span class="open">进入</span>
+            <div class="top">
+              <div class="icon-box">
+                <i data-lucide="smartphone"></i>
+              </div>
+              <span class="badge">2 页可看 · 进行中</span>
+            </div>
+            <h3>APP 端</h3>
+            <p>手机端，面向运行值班、班组长、环保专员、领导查看。支持实时监控、异常报警、阈值配置、历史查询。</p>
+            <div class="stats">
+              <div class="stat"><strong>2</strong>已完成</div>
+              <div class="stat"><strong>10+</strong>待设计</div>
+              <div class="stat"><strong>安卓</strong>端</div>
+            </div>
+          </a>
+
+          <a class="dir-card" href="pc/index.html">
+            <span class="open">进入</span>
+            <div class="top">
+              <div class="icon-box">
+                <i data-lucide="monitor"></i>
+              </div>
+              <span class="badge todo">待设计</span>
+            </div>
+            <h3>后台 PC 端</h3>
+            <p>管理后台，面向系统管理员、环保专员。支持机组/电厂/用户管理、阈值规则配置、数据源对接、报表导出、审计日志。</p>
+            <div class="stats">
+              <div class="stat"><strong>0</strong>已完成</div>
+              <div class="stat"><strong>8+</strong>待设计</div>
+              <div class="stat"><strong>Web</strong>浏览器端</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">华电新能源集团股份有限公司 · 环保管理平台 · 原型 V0.1</div>
+  </div>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

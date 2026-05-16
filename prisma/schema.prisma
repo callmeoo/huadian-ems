@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  LEADER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 污染物实时数据（爬取后落库）
+model EmissionRecord {
+  id          String   @id @default(cuid())
+  unitId      String                    // 机组编号
+  recordedAt  DateTime                  // 数据时间戳（外部平台的）
+  fetchedAt   DateTime @default(now())  // 本系统抓取时间
+  nox         Float?                    // NOx 浓度 mg/m³
+  so2         Float?                    // SO₂ 浓度 mg/m³
+  dust        Float?                    // 烟尘 mg/m³
+  o2          Float?                    // 含氧量 %
+  flow        Float?                    // 烟气流量
+  temp        Float?                    // 温度
+  pressure    Float?                    // 压力
+  source      String   @default("scraper") // scraper | import
+
+  @@index([unitId, recordedAt])
+}
+
+// 报警记录
+model AlertRecord {
+  id         String   @id @default(cuid())
+  unitId     String
+  type       String   // over_limit | warn | missing | anomaly
+  pollutant  String?  // nox | so2 | dust
+  value      Float?
+  threshold  Float?
+  occurredAt DateTime
+  resolvedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([unitId, occurredAt])
+}
+
+// 设备台账
+model Equipment {
+  id           String   @id @default(cuid())
+  name         String
+  unitId       String
+  type         String   // CEMS | FGD | SCR | ...
+  manufacturer String?
+  installedAt  DateTime?
+  status       String   @default("normal") // normal | maintenance | fault
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

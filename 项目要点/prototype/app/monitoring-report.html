@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>监测报表 · 原型</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #d8dde5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    /* ── Phone frame ── */
+    .phone-wrapper { display: flex; gap: 24px; align-items: flex-start; }
+
+    .phone-label {
+      color: #8090a8;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .phone-frame {
+      width: 390px;
+      height: 844px;
+      background: #f0f2f5;
+      border-radius: 48px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 10px #1a1a2e,
+        0 0 0 12px #2a2a3e,
+        0 40px 80px rgba(0,0,0,0.4);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* On real mobile: no frame */
+    @media (max-width: 480px) {
+      body { background: #f0f2f5; padding: 0; align-items: stretch; }
+      .phone-wrapper { gap: 0; }
+      .phone-label { display: none; }
+      .phone-frame {
+        width: 100vw;
+        height: 100dvh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* ── Scroll area (inner scroll) ── */
+    .scroll-area {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .scroll-area::-webkit-scrollbar { display: none; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: linear-gradient(160deg, #0062d4 0%, #007AFF 55%, #2ca5ff 100%);
+      padding: 14px 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-time { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+    .status-icons { display: flex; gap: 6px; align-items: center; }
+    .status-icons svg { width: 15px; height: 15px; color: #fff; }
+    .status-bat {
+      font-size: 12px; font-weight: 600; color: #fff;
+      background: rgba(255,255,255,0.25);
+      padding: 2px 6px; border-radius: 4px;
+    }
+
+    /* ── Hero (gradient header) ── */
+    .hero {
+      background: linear-gradient(160deg, #0062d4 0%, #007AFF 55%, #2ca5ff 100%);
+      position: relative;
+      overflow: hidden;
+      padding-bottom: 14px;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(100,200,255,0.22) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .hero-glow {
+      position: absolute;
+      top: -60px; right: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(50,150,255,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── Nav bar ── */
+    .nav-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 10px 16px 8px;
+      min-height: 44px;
+      gap: 0;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 2px;
+      color: #fff; font-size: 16px; font-weight: 500;
+      background: none; border: none; cursor: pointer;
+      padding: 4px 0;
+      white-space: nowrap;
+    }
+    .nav-back svg { width: 22px; height: 22px; stroke-width: 2.5; }
+    .nav-center {
+      flex: 1;
+      text-align: center;
+      overflow: hidden;
+    }
+    .nav-title {
+      font-size: 16px; font-weight: 600; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nav-company {
+      font-size: 11px; color: rgba(255,255,255,0.75);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nav-menu {
+      background: none; border: none; cursor: pointer;
+      color: #fff; padding: 4px 0 4px 8px;
+      display: flex; align-items: center;
+    }
+    .nav-menu svg { width: 22px; height: 22px; }
+
+    /* ── Outlet selector ── */
+    .outlet-wrap { position: relative; padding: 0 16px; }
+    .outlet-btn {
+      width: 100%;
+      background: rgba(255,255,255,0.16);
+      border: 1.5px solid rgba(255,255,255,0.35);
+      border-radius: 24px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    .outlet-btn:active { background: rgba(255,255,255,0.26); }
+    .outlet-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      background: #fff;
+      padding: 9px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px solid #ebeef2;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .filter-tag {
+      display: flex; align-items: center; gap: 4px;
+      background: #f5f7fa;
+      border: 1px solid #ebeef2;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px; color: #1a1a1a; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .filter-tag:active { background: #ebeef2; }
+    .filter-tag svg { width: 13px; height: 13px; color: #8090a8; }
+    .filter-tag.period-expand { flex: 1; justify-content: space-between; }
+    .export-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: #e6f4ff;
+      border: 1.5px solid #1677ff;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px; color: #1677ff; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .export-btn:active { background: #bae0ff; }
+    .export-btn svg { width: 13px; height: 13px; }
+
+    /* ── Table container ── */
+    .table-outer {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      background: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      white-space: nowrap;
+      font-size: 11px;
+      min-width: max-content;
+    }
+
+    th, td {
+      border: 1px solid #dce3ed;
+      padding: 6px 9px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    /* Time column: sticky left */
+    th.t, td.t {
+      position: sticky;
+      left: 0;
+      z-index: 6;
+      min-width: 48px;
+      max-width: 56px;
+    }
+    th.t { z-index: 8; }
+
+    /* Header rows */
+    thead th {
+      font-size: 10.5px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    /* Level-1 group headers */
+    .g1 { background: #e8f0fe; color: #1a3a8a; }
+    .g1.t { background: #dbeafe; }
+
+    /* Level-2 sub-group headers */
+    .g2 { background: #f0f5ff; color: #2d4a9a; }
+
+    /* Level-3 leaf headers */
+    .g3 { background: #f7f9ff; color: #4a5568; }
+
+    /* Color per column group */
+    .c-flow { background: #f0fffe; color: #0e7490; }
+    .c-flow.g1 { background: #ccfbf1; color: #0f766e; }
+    .c-flow.g2, .c-flow.g3 { background: #ecfdf5; color: #065f46; }
+
+    .c-so2 { }
+    .c-so2.g1 { background: #dbeafe; color: #1e40af; }
+    .c-so2.g2 { background: #eff6ff; color: #1d4ed8; }
+    .c-so2.g3 { background: #f5f8ff; color: #3b5bdb; }
+
+    .c-nox.g1 { background: #fce7f3; color: #9d174d; }
+    .c-nox.g2 { background: #fdf2f8; color: #be185d; }
+    .c-nox.g3 { background: #fef9fb; color: #db2777; }
+
+    .c-nh3.g1 { background: #fef3c7; color: #92400e; }
+    .c-nh3.g2, .c-nh3.g3 { background: #fffbeb; color: #b45309; }
+
+    .c-gas.g1 { background: #f3e8ff; color: #6b21a8; }
+    .c-gas.g2, .c-gas.g3 { background: #faf5ff; color: #7c3aed; }
+
+    /* Data cells */
+    td { color: #1a1a1a; }
+    td.t { background: #fafbff; color: #374151; font-weight: 600; font-size: 11px; }
+
+    /* Summary rows */
+    tr.r-avg td { background: #f8faff; }
+    tr.r-avg td.t { background: #eef2ff; color: #3730a3; font-weight: 700; }
+    tr.r-max td { background: #f8faff; }
+    tr.r-max td.t { background: #eef2ff; color: #3730a3; font-weight: 700; }
+    tr.r-min td { background: #f8faff; }
+    tr.r-min td.t { background: #eef2ff; color: #3730a3; font-weight: 700; }
+    tr.r-total td { background: #e6f4ff; }
+    tr.r-total td.t { background: #bfdbfe; color: #1d4ed8; font-weight: 700; font-size: 10px; line-height: 1.3; }
+
+    .dash { color: #b0bec5; }
+    .warn { color: #d97706; font-size: 10px; }
+    .ok { color: #059669; }
+
+    /* ── Overlay ── */
+    .overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.42);
+      z-index: 100;
+    }
+    .overlay.show { display: block; }
+
+    /* ── Bottom sheet ── */
+    .sheet {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: #fff;
+      border-radius: 18px 18px 0 0;
+      z-index: 200;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
+      max-height: 65%;
+      display: flex;
+      flex-direction: column;
+    }
+    .sheet.show { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px; height: 4px;
+      background: #dce3ed;
+      border-radius: 2px;
+      margin: 10px auto 0;
+      flex-shrink: 0;
+    }
+
+    .sheet-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px 10px;
+      border-bottom: 1px solid #f0f3f7;
+      flex-shrink: 0;
+    }
+    .sheet-cancel { color: #8090a8; font-size: 15px; cursor: pointer; padding: 4px; }
+    .sheet-confirm { color: #1677ff; font-size: 15px; font-weight: 600; cursor: pointer; padding: 4px; }
+
+    .sheet-body { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+
+    .pick-item {
+      padding: 15px 20px;
+      font-size: 16px;
+      text-align: center;
+      cursor: pointer;
+      color: #8090a8;
+      border-bottom: 1px solid #f8f9fb;
+      transition: background 0.1s;
+    }
+    .pick-item:last-child { border-bottom: none; }
+    .pick-item:active { background: #f5f7fa; }
+    .pick-item.is-current { color: #c5ccd8; font-size: 15px; }
+    .pick-item.is-selected { color: #1a1a1a; font-weight: 700; font-size: 17px; }
+  </style>
+</head>
+<body>
+
+<div class="phone-wrapper">
+
+  <!-- ══ Phone frame ══ -->
+  <div>
+    <div class="phone-frame" id="phoneFrame">
+
+      <!-- Scroll area -->
+      <div class="scroll-area">
+
+        <!-- Status bar -->
+        <div class="status-bar">
+          <span class="status-time">18:03</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5.7 5.7A10 10 0 0 1 18.3 18.3M2 2l20 20"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l5.5 6L12 6l5.5 6L23 6"/></svg>
+            <span class="status-bat">24%</span>
+          </div>
+        </div>
+
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-glow"></div>
+
+          <!-- Nav bar -->
+          <div class="nav-bar">
+            <button class="nav-back" onclick="history.back()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg>
+              监测报表
+            </button>
+            <div class="nav-center">
+              <div class="nav-title"></div>
+              <div class="nav-company">广州大学城华电新能源...</div>
+            </div>
+            <button class="nav-menu">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+          </div>
+
+          <!-- Outlet selector -->
+          <div class="outlet-wrap">
+            <button class="outlet-btn" onclick="openSheet('outlet-sheet')">
+              <span id="outletLabel">废气排放口02</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        </div><!-- /hero -->
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+          <button class="filter-tag" id="periodTypeBtn" onclick="openSheet('type-sheet')">
+            <span id="periodTypeLabel">季度</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <button class="filter-tag period-expand" id="periodBtn" onclick="openSheet('period-sheet')">
+            <span id="periodLabel">2026年第二季度</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <button class="export-btn" onclick="handleExport()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            导出
+          </button>
+        </div>
+
+        <!-- ══ Quarterly table ══ -->
+        <div id="view-quarter" class="table-outer">
+          <table>
+            <thead>
+              <tr>
+                <th class="t g1" rowspan="3">时间</th>
+                <th class="g1 c-flow" colspan="2">流量<br>（万标立方米）</th>
+                <th class="g1 c-so2" colspan="6">二氧化硫（毫克/立方米）</th>
+                <th class="g1 c-nox" colspan="6">氮氧化物（毫克/立方米）</th>
+                <th class="g1 c-nh3" colspan="3">氨含量<br>（百分比）</th>
+                <th class="g1 c-gas" colspan="2">烟气流速<br>（米/秒）</th>
+                <th class="g1 c-gas" colspan="2">烟气温度<br>（摄氏度）</th>
+                <th class="g1 c-gas" colspan="2">烟气湿度<br>（百分比）</th>
+                <th class="g1 c-gas" colspan="2">烟气压力<br>（千帕）</th>
+              </tr>
+              <tr>
+                <th class="g2 c-flow" rowspan="2">累计流量</th>
+                <th class="g2 c-flow" rowspan="2">累计<br>修正流量</th>
+                <th class="g2 c-so2" colspan="3">上限值</th>
+                <th class="g2 c-so2" colspan="3">修正值</th>
+                <th class="g2 c-nox" colspan="3">上限值</th>
+                <th class="g2 c-nox" colspan="3">修正值</th>
+                <th class="g2 c-nh3" rowspan="2">监测值</th>
+                <th class="g2 c-nh3" rowspan="2">修正值</th>
+                <th class="g2 c-nh3" rowspan="2">豁免值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+              </tr>
+              <tr>
+                <th class="g3 c-so2">实测值</th><th class="g3 c-so2">折算值</th><th class="g3 c-so2">排放量<br>（千克）</th>
+                <th class="g3 c-so2">实测值</th><th class="g3 c-so2">度/邻后<br>折算值</th><th class="g3 c-so2">排放量<br>（千克）</th>
+                <th class="g3 c-nox">实测值</th><th class="g3 c-nox">折算值</th><th class="g3 c-nox">排放量<br>（千克）</th>
+                <th class="g3 c-nox">实测值</th><th class="g3 c-nox">度/邻后<br>折算值</th><th class="g3 c-nox">排放量<br>（千克）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Apr -->
+              <tr>
+                <td class="t">4月</td>
+                <td>25235.242</td><td>25182.951</td>
+                <td>41.026</td><td>43.102</td><td>484.027</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td>39.345</td><td class="dash">—</td><td class="dash">—</td>
+                <td>19.643</td><td class="dash">—</td>
+                <td>105.094</td><td class="dash">—</td>
+                <td>11.143</td><td class="dash">—</td>
+                <td>-0.307</td><td class="dash">—</td>
+              </tr>
+              <!-- May -->
+              <tr>
+                <td class="t">5月</td>
+                <td>11557.406</td><td>11480.097</td>
+                <td>40.022</td><td>42.518</td><td>395.640</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td>36.132</td><td class="dash">—</td><td class="dash">—</td>
+                <td>20.034</td><td class="dash">—</td>
+                <td>104.158</td><td class="dash">—</td>
+                <td>12.003</td><td class="dash">—</td>
+                <td>-0.292</td><td class="dash">—</td>
+              </tr>
+              <!-- Jun -->
+              <tr>
+                <td class="t">6月</td>
+                <td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td>
+                <td class="dash">--</td><td class="dash">--</td>
+              </tr>
+              <!-- Avg -->
+              <tr class="r-avg">
+                <td class="t">平均值</td>
+                <td class="dash">—</td><td class="dash">—</td>
+                <td>40.524</td><td>42.810</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td>37.738</td><td class="dash">—</td><td class="dash">—</td>
+                <td>19.838</td><td class="dash">—</td>
+                <td>104.626</td><td class="dash">—</td>
+                <td>11.573</td><td class="dash">—</td>
+                <td>-0.300</td><td class="dash">—</td>
+              </tr>
+              <!-- Max -->
+              <tr class="r-max">
+                <td class="t">最大值</td>
+                <td>25235.242</td><td>25182.951</td>
+                <td>41.026</td><td>43.102</td><td>484.027</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td>39.345</td><td class="dash">—</td><td class="dash">—</td>
+                <td>20.034</td><td class="dash">—</td>
+                <td>105.094</td><td class="dash">—</td>
+                <td>12.003</td><td class="dash">—</td>
+                <td>-0.292</td><td class="dash">—</td>
+              </tr>
+              <!-- Min -->
+              <tr class="r-min">
+                <td class="t">最小值</td>
+                <td>11557.406</td><td>11480.097</td>
+                <td>40.022</td><td>42.518</td><td>395.640</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td>36.132</td><td class="dash">—</td><td class="dash">—</td>
+                <td>19.643</td><td class="dash">—</td>
+                <td>104.158</td><td class="dash">—</td>
+                <td>11.143</td><td class="dash">—</td>
+                <td>-0.307</td><td class="dash">—</td>
+              </tr>
+              <!-- Total -->
+              <tr class="r-total">
+                <td class="t">季度排放<br>总量（吨）</td>
+                <td>36792.648</td><td>36663.048</td>
+                <td class="dash">—</td><td class="dash">—</td><td>879.667</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td>
+                <td class="dash">—</td><td class="dash">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div><!-- /view-quarter -->
+
+        <!-- ══ Monthly table ══ -->
+        <div id="view-month" class="table-outer" style="display:none;">
+          <table>
+            <thead>
+              <tr>
+                <th class="t g1" rowspan="3">时间</th>
+                <th class="g1 c-flow" colspan="2">流量<br>（万标立方米）</th>
+                <th class="g1 c-so2" colspan="6">二氧化硫（毫克/立方米）</th>
+                <th class="g1 c-nox" colspan="6">氮氧化物（毫克/立方米）</th>
+                <th class="g1 c-nh3" colspan="3">氨含量<br>（百分比）</th>
+                <th class="g1 c-gas" colspan="2">烟气流速<br>（米/秒）</th>
+                <th class="g1 c-gas" colspan="2">烟气温度<br>（摄氏度）</th>
+                <th class="g1 c-gas" colspan="2">烟气湿度<br>（百分比）</th>
+                <th class="g1 c-gas" colspan="2">烟气压力<br>（千帕）</th>
+              </tr>
+              <tr>
+                <th class="g2 c-flow" rowspan="2">累计流量</th>
+                <th class="g2 c-flow" rowspan="2">累计<br>修正流量</th>
+                <th class="g2 c-so2" colspan="3">上限值</th>
+                <th class="g2 c-so2" colspan="3">修正值</th>
+                <th class="g2 c-nox" colspan="3">上限值</th>
+                <th class="g2 c-nox" colspan="3">修正值</th>
+                <th class="g2 c-nh3" rowspan="2">监测值</th>
+                <th class="g2 c-nh3" rowspan="2">修正值</th>
+                <th class="g2 c-nh3" rowspan="2">豁免值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+              </tr>
+              <tr>
+                <th class="g3 c-so2">实测值</th><th class="g3 c-so2">折算值</th><th class="g3 c-so2">排放量<br>（千克）</th>
+                <th class="g3 c-so2">实测值</th><th class="g3 c-so2">度/邻后<br>折算值</th><th class="g3 c-so2">排放量<br>（千克）</th>
+                <th class="g3 c-nox">实测值</th><th class="g3 c-nox">折算值</th><th class="g3 c-nox">排放量<br>（千克）</th>
+                <th class="g3 c-nox">实测值</th><th class="g3 c-nox">度/邻后<br>折算值</th><th class="g3 c-nox">排放量<br>（千克）</th>
+              </tr>
+            </thead>
+            <tbody id="monthly-tbody">
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div><!-- /view-month -->
+
+        <!-- ══ Annual table ══ -->
+        <div id="view-year" class="table-outer" style="display:none;">
+          <table>
+            <thead>
+              <tr>
+                <th class="t g1" rowspan="3">时间</th>
+                <th class="g1 c-flow" colspan="2">流量<br>（万标立方米）</th>
+                <th class="g1 c-so2" colspan="6">二氧化硫（毫克/立方米）</th>
+                <th class="g1 c-nox" colspan="6">氮氧化物（毫克/立方米）</th>
+                <th class="g1 c-nh3" colspan="3">氨含量<br>（百分比）</th>
+                <th class="g1 c-gas" colspan="2">烟气流速<br>（米/秒）</th>
+                <th class="g1 c-gas" colspan="2">烟气温度<br>（摄氏度）</th>
+                <th class="g1 c-gas" colspan="2">烟气湿度<br>（百分比）</th>
+                <th class="g1 c-gas" colspan="2">烟气压力<br>（千帕）</th>
+              </tr>
+              <tr>
+                <th class="g2 c-flow" rowspan="2">累计流量</th>
+                <th class="g2 c-flow" rowspan="2">累计<br>修正流量</th>
+                <th class="g2 c-so2" colspan="3">上限值</th>
+                <th class="g2 c-so2" colspan="3">修正值</th>
+                <th class="g2 c-nox" colspan="3">上限值</th>
+                <th class="g2 c-nox" colspan="3">修正值</th>
+                <th class="g2 c-nh3" rowspan="2">监测值</th>
+                <th class="g2 c-nh3" rowspan="2">修正值</th>
+                <th class="g2 c-nh3" rowspan="2">豁免值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+                <th class="g2 c-gas" rowspan="2">监测值</th>
+                <th class="g2 c-gas" rowspan="2">修正值</th>
+              </tr>
+              <tr>
+                <th class="g3 c-so2">实测值</th><th class="g3 c-so2">折算值</th><th class="g3 c-so2">排放量<br>（千克）</th>
+                <th class="g3 c-so2">实测值</th><th class="g3 c-so2">度/邻后<br>折算值</th><th class="g3 c-so2">排放量<br>（千克）</th>
+                <th class="g3 c-nox">实测值</th><th class="g3 c-nox">折算值</th><th class="g3 c-nox">排放量<br>（千克）</th>
+                <th class="g3 c-nox">实测值</th><th class="g3 c-nox">度/邻后<br>折算值</th><th class="g3 c-nox">排放量<br>（千克）</th>
+              </tr>
+            </thead>
+            <tbody id="annual-tbody"><!-- filled by JS --></tbody>
+          </table>
+        </div><!-- /view-year -->
+
+      </div><!-- /scroll-area -->
+
+      <!-- ── Overlay ── -->
+      <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+      <!-- ── Sheet: Outlet ── -->
+      <div class="sheet" id="outlet-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-hdr">
+          <span class="sheet-cancel" onclick="closeAll()">取消</span>
+          <span class="sheet-confirm" onclick="confirmOutlet()">确认</span>
+        </div>
+        <div class="sheet-body" id="outlet-list">
+          <div class="pick-item is-current" data-v="废气排放口02">废气排放口02</div>
+          <div class="pick-item" data-v="废气排放口01">废气排放口01</div>
+        </div>
+      </div>
+
+      <!-- ── Sheet: Period type ── -->
+      <div class="sheet" id="type-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-hdr">
+          <span class="sheet-cancel" onclick="closeAll()">取消</span>
+          <span class="sheet-confirm" onclick="confirmType()">确认</span>
+        </div>
+        <div class="sheet-body" id="type-list">
+          <div class="pick-item" data-v="年">年</div>
+          <div class="pick-item is-current" data-v="季度">季度</div>
+          <div class="pick-item" data-v="月">月</div>
+        </div>
+      </div>
+
+      <!-- ── Sheet: Period ── -->
+      <div class="sheet" id="period-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-hdr">
+          <span class="sheet-cancel" onclick="closeAll()">取消</span>
+          <span class="sheet-confirm" onclick="confirmPeriod()">确认</span>
+        </div>
+        <div class="sheet-body" id="period-list">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+    </div><!-- /phone-frame -->
+    <div class="phone-label">监测报表 · 原型预览</div>
+  </div>
+
+</div><!-- /phone-wrapper -->
+
+<script>
+  // ── State ──
+  let outlet = '废气排放口02';
+  let tempOutlet = '废气排放口02';
+  let periodType = '季度';
+  let tempType = '季度';
+  let period = '2026年第二季度';
+  let tempPeriod = '2026年第二季度';
+
+  // ── Period options ──
+  const PERIODS = {
+    '年':  ['2026年','2025年','2024年','2023年'],
+    '季度':['2026年第二季度','2026年第一季度','2025年第四季度','2025年第三季度','2025年第二季度','2025年第一季度'],
+    '月':  ['2026年05月','2026年04月','2026年03月','2026年02月','2026年01月','2025年12月','2025年11月','2025年10月']
+  };
+
+  // ── Monthly data (Apr 2026 sample) ──
+  const MONTHLY = [
+    ['01日','1029.295','—','47.036','44.158','484.027','—','—','—','—','—','—','—','—','—','14.609','—','—','23.686','—','107.591','—','11.576','—','-0.417','—'],
+    ['02日','1019.479','—','47.077','43.331','479.933','—','—','—','—','—','—','—','—','—','14.481','—','—','23.582','—','107.698','—','12.003','—','-0.423','—'],
+    ['03日','1015.484','—','47.224','42.857','459.040','—','—','—','—','—','—','—','—','—','14.389','—','—','23.349','—','107.965','—','12.055','—','-0.420','—'],
+    ['04日','864.682','—','38.477','42.789','326.358','—','—','—','—','—','—','—','—','—','15.605','—','—','19.005','—','103.474','—','10.557','—','0.292','—'],
+    ['05日','861.917','—','39.660','42.816','341.824','—','—','—','—','—','—','—','—','—','15.442','—','—','19.443','—','103.474','—','10.455','—','-0.306','—'],
+    ['06日','856.442','—','40.422','41.829','346.187','—','—','—','—','—','—','—','—','—','15.415','—','—','19.435','—','103.413','—','11.192','—','-0.312','—'],
+    ['07日','853.696','—','40.261','43.243','343.806','—','—','—','—','—','—','—','—','—','15.414','—','—','19.396','—','104.108','—','11.325','—','-0.296','—'],
+    ['08日','864.663','—','39.863','43.289','285.639','—','—','—','—','—','—','—','—','—','15.475','—','—','19.478','—','104.136','—','10.593','—','-0.307','—'],
+    ['09日','861.129','—','41.409','42.981','311.624','—','—','—','—','—','—','—','—','—','15.236','—','—','19.986','—','104.431','—','11.005','—','-0.309','—'],
+    ['10日','862.449','—','40.519','42.567','318.619','—','—','—','—','—','—','—','—','—','15.317','—','—','19.626','—','105.987','—','11.254','—','-0.306','—'],
+    ['11日','860.569','—','40.505','42.014','348.582','—','—','—','—','—','—','—','—','—','15.297','—','—','19.626','—','105.987','—','11.254','—','-0.306','—'],
+    ['12日','862.886','—','40.484','42.567','349.328','—','—','—','—','—','—','—','—','—','15.294','—','—','19.682','—','104.985','—','11.261','—','-0.306','—'],
+    ['13日','861.695','—','41.033','45.320','353.574','—','—','—','—','—','—','—','—','—','15.317','—','—','19.649','—','105.813','—','11.286','—','-0.307','—'],
+    ['14日','861.382','—','40.255','43.075','346.957','—','—','—','—','—','—','—','—','—','15.383','—','—','19.587','—','105.094','—','11.286','—','-0.307','—'],
+    ['15日','861.091','—','41.033','43.075','346.957','—','—','—','—','—','—','—','—','—','15.393','—','—','19.587','—','105.094','—','11.286','—','-0.307','—'],
+    ['16日','863.542','—','40.636','43.322','350.908','—','—','—','—','—','—','—','—','—','15.372','—','—','19.629','—','105.247','—','11.131','—','-0.308','—'],
+    ['17日','—','—','<span class="warn">有效数据不足</span>','<span class="warn">涉及因子无效</span>','<span class="warn">有效数据不足</span>','<span class="warn">涉及因子无效</span>','<span class="warn">有效数据不足</span>','<span class="warn">涉及因子无效</span>','—','—','—','—','—','—','119.338','<span class="warn">有效数据不足</span>','—','9.476','<span class="warn">有效数据不足</span>','—','—','—','—','—','—'],
+    ['18日','—','—','<span class="warn">有效数据不足</span>','<span class="warn">涉及因子无效</span>','<span class="warn">有效数据不足</span>','<span class="warn">涉及因子无效</span>','<span class="warn">有效数据不足</span>','<span class="warn">涉及因子无效</span>','—','—','—','—','—','—','53.232','<span class="warn">有效数据不足</span>','—','18.006','<span class="warn">有效数据不足</span>','<span class="warn">有效数据不足</span>','<span class="warn">有效数据不足</span>','<span class="warn">有效数据不足</span>','<span class="warn">有效数据不足</span>','<span class="warn">有效数据不足</span>','<span class="warn">有效数据不足</span>'],
+    ['19日','862.316','—','40.827','42.463','352.026','—','—','—','—','—','—','—','—','—','15.231','—','—','19.496','—','104.243','—','10.894','—','-0.302','—'],
+    ['20日','—','—','39.992','42.802','353.221','—','—','—','—','—','—','—','—','—','15.394','—','—','19.601','—','104.945','—','10.977','—','-0.309','—'],
+    ['21日','853.221','—','40.920','43.319','353.221','—','—','—','—','—','—','—','—','—','15.338','—','—','19.586','—','105.938','—','11.048','—','-0.312','—'],
+    ['22日','860.806','—','40.522','43.122','348.846','—','—','—','—','—','—','—','—','—','15.362','—','—','19.586','—','105.938','—','11.048','—','-0.312','—'],
+    ['23日','877.888','—','39.276','42.449','344.756','—','—','—','—','—','—','—','—','—','15.448','—','—','20.114','—','105.988','—','10.731','—','-0.321','—'],
+    ['24日','880.104','—','38.936','42.487','331.857','—','—','—','—','—','—','—','—','—','15.501','—','—','20.112','—','105.988','—','10.423','—','-0.321','—'],
+    ['25日','879.854','—','40.149','43.069','353.212','—','—','—','—','—','—','—','—','—','15.407','—','—','19.804','—','103.993','—','10.543','—','-0.307','—'],
+    ['26日','869.358','—','38.936','43.129','348.083','—','—','—','—','—','—','—','—','—','15.429','—','—','19.642','—','103.891','—','10.532','—','-0.307','—'],
+    ['27日','866.797','—','40.989','43.708','355.281','—','—','—','—','—','—','—','—','—','15.373','—','—','19.585','—','103.785','—','10.938','—','-0.311','—'],
+    ['28日','868.590','—','40.765','42.810','337.889','—','—','—','—','—','—','—','—','—','15.415','—','—','19.660','—','103.579','—','10.862','—','-0.309','—'],
+    ['29日','874.020','—','40.792','43.823','313.146','—','—','—','—','—','—','—','—','—','15.415','—','—','19.714','—','104.009','—','10.726','—','-0.309','—'],
+    ['30日','884.172','—','40.527','44.017','342.968','—','—','—','—','—','—','—','—','—','15.476','—','—','19.887','—','105.192','—','10.192','—','-0.320','—'],
+  ];
+
+  const MONTHLY_SUMMARY = [
+    {cls:'r-avg', label:'平均值',   v:['39.345','44.702','41.026','43.102','41.026','43.102','15.550','15.289','—','—','—','—','—','—','20.034','102.67','105.1','10.751','11.028','-0.306','—','23.686','—','—','—']},
+    {cls:'r-max', label:'最大值',   v:['1029.295','79.488','47.224','45.320','484.027','—','—','—','—','—','—','—','—','—','119.338','—','—','23.686','—','107.965','—','12.055','—','-0.292','—']},
+    {cls:'r-min', label:'最小值',   v:['110.806','79.489','8.995','42.449','53.387','—','—','—','—','—','—','—','—','—','14.389','—','—','9.476','—','56.753','—','5.898','—','-0.423','—']},
+  ];
+
+  // ── Annual data (2026) ──
+  const ANNUAL = [
+    ['1月','36792.648','36663.048','41.026','43.102','484.027','—','—','—','—','—','—','—','—','—','18.234','—','—','21.340','—','106.200','—','11.820','—','-0.312','—'],
+    ['2月','28514.320','28390.211','40.812','42.950','412.350','—','—','—','—','—','—','—','—','—','16.781','—','—','20.842','—','105.640','—','11.234','—','-0.305','—'],
+    ['3月','31205.480','31082.340','40.210','42.640','396.720','—','—','—','—','—','—','—','—','—','17.453','—','—','20.456','—','105.180','—','11.456','—','-0.298','—'],
+    ['4月','25235.242','25182.951','41.026','43.102','484.027','—','—','—','—','—','—','—','—','—','39.345','—','—','19.643','—','105.094','—','11.143','—','-0.307','—'],
+    ['5月','11557.406','11480.097','40.022','42.518','395.640','—','—','—','—','—','—','—','—','—','36.132','—','—','20.034','—','104.158','—','12.003','—','-0.292','—'],
+    ['6月','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--','--'],
+  ];
+
+  // ── Build monthly table ──
+  function buildMonthly() {
+    const tbody = document.getElementById('monthly-tbody');
+    let html = '';
+    MONTHLY.forEach(r => {
+      const [label, ...cols] = r;
+      html += `<tr><td class="t">${label}</td>` + cols.map(c => `<td>${c === '—' ? '<span class="dash">—</span>' : c}</td>`).join('') + '</tr>';
+    });
+    MONTHLY_SUMMARY.forEach(s => {
+      html += `<tr class="${s.cls}"><td class="t">${s.label}</td>` + s.v.map(c => `<td>${c === '—' ? '<span class="dash">—</span>' : c}</td>`).join('') + '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  // ── Build annual table ──
+  function buildAnnual() {
+    const tbody = document.getElementById('annual-tbody');
+    let html = '';
+    ANNUAL.forEach(r => {
+      const [label, ...cols] = r;
+      html += `<tr><td class="t">${label}</td>` + cols.map(c => `<td>${c === '--' ? '<span class="dash">--</span>' : (c === '—' ? '<span class="dash">—</span>' : c)}</td>`).join('') + '</tr>';
+    });
+    // summary
+    html += `
+      <tr class="r-avg"><td class="t">平均值</td>${Array(25).fill('<td><span class="dash">—</span></td>').join('')}</tr>
+      <tr class="r-max"><td class="t">最大值</td><td>36792.648</td>${Array(24).fill('<td><span class="dash">—</span></td>').join('')}</tr>
+      <tr class="r-min"><td class="t">最小值</td><td>11557.406</td>${Array(24).fill('<td><span class="dash">—</span></td>').join('')}</tr>
+    `;
+    tbody.innerHTML = html;
+  }
+
+  buildMonthly();
+  buildAnnual();
+
+  // ── Sheet control ──
+  function openSheet(id) {
+    if (id === 'period-sheet') buildPeriodList();
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById(id).classList.add('show');
+  }
+
+  function closeAll() {
+    document.getElementById('overlay').classList.remove('show');
+    document.querySelectorAll('.sheet').forEach(s => s.classList.remove('show'));
+  }
+
+  // ── Outlet picker ──
+  document.getElementById('outlet-list').addEventListener('click', e => {
+    const item = e.target.closest('.pick-item');
+    if (!item) return;
+    document.querySelectorAll('#outlet-list .pick-item').forEach(i => i.classList.remove('is-selected','is-current'));
+    item.classList.add('is-selected');
+    tempOutlet = item.dataset.v;
+  });
+
+  function confirmOutlet() {
+    outlet = tempOutlet;
+    document.getElementById('outletLabel').textContent = outlet;
+    closeAll();
+  }
+
+  // ── Period type picker ──
+  document.getElementById('type-list').addEventListener('click', e => {
+    const item = e.target.closest('.pick-item');
+    if (!item) return;
+    document.querySelectorAll('#type-list .pick-item').forEach(i => i.classList.remove('is-selected','is-current'));
+    item.classList.add('is-selected');
+    tempType = item.dataset.v;
+  });
+
+  function confirmType() {
+    periodType = tempType;
+    period = PERIODS[periodType][0];
+    tempPeriod = period;
+    document.getElementById('periodTypeLabel').textContent = periodType;
+    document.getElementById('periodLabel').textContent = period;
+    switchView();
+    closeAll();
+  }
+
+  // ── Period picker ──
+  function buildPeriodList() {
+    const list = document.getElementById('period-list');
+    list.innerHTML = PERIODS[periodType].map(p =>
+      `<div class="pick-item ${p === period ? 'is-current' : ''}" data-v="${p}">${p}</div>`
+    ).join('');
+  }
+
+  document.getElementById('period-list').addEventListener('click', e => {
+    const item = e.target.closest('.pick-item');
+    if (!item) return;
+    document.querySelectorAll('#period-list .pick-item').forEach(i => i.classList.remove('is-selected','is-current'));
+    item.classList.add('is-selected');
+    tempPeriod = item.dataset.v;
+  });
+
+  function confirmPeriod() {
+    period = tempPeriod;
+    document.getElementById('periodLabel').textContent = period;
+    closeAll();
+  }
+
+  // ── View switching ──
+  function switchView() {
+    document.getElementById('view-quarter').style.display = 'none';
+    document.getElementById('view-month').style.display = 'none';
+    document.getElementById('view-year').style.display = 'none';
+    if (periodType === '季度') document.getElementById('view-quarter').style.display = 'block';
+    else if (periodType === '月') document.getElementById('view-month').style.display = 'block';
+    else document.getElementById('view-year').style.display = 'block';
+  }
+
+  // ── Export ──
+  function stripHtml(s) {
+    return String(s).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+  }
+
+  // 3-level header arrays (26 cols: time + 25 data)
+  const H1 = ['时间','流量（万标立方米）','','二氧化硫（毫克/立方米）','','','','','','氮氧化物（毫克/立方米）','','','','','','氨含量（百分比）','','','烟气流速（米/秒）','','烟气温度（摄氏度）','','烟气湿度（百分比）','','烟气压力（千帕）',''];
+  const H2 = ['','累计流量','累计修正流量','上限值','','','修正值','','','上限值','','','修正值','','','监测值','修正值','豁免值','监测值','修正值','监测值','修正值','监测值','修正值','监测值','修正值'];
+  const H3 = ['','','','实测值','折算值','排放量（千克）','实测值','度/邻后折算值','排放量（千克）','实测值','折算值','排放量（千克）','实测值','度/邻后折算值','排放量（千克）','','','','','','','','','','',''];
+
+  const MERGES = [
+    // 时间 rowspan 3
+    {s:{r:0,c:0},e:{r:2,c:0}},
+    // L1 group spans
+    {s:{r:0,c:1},e:{r:0,c:2}},   // 流量
+    {s:{r:0,c:3},e:{r:0,c:8}},   // SO2
+    {s:{r:0,c:9},e:{r:0,c:14}},  // NOx
+    {s:{r:0,c:15},e:{r:0,c:17}}, // NH3
+    {s:{r:0,c:18},e:{r:0,c:19}}, // 流速
+    {s:{r:0,c:20},e:{r:0,c:21}}, // 温度
+    {s:{r:0,c:22},e:{r:0,c:23}}, // 湿度
+    {s:{r:0,c:24},e:{r:0,c:25}}, // 压力
+    // L2 rowspan-2 leafs and sub-group spans
+    {s:{r:1,c:1},e:{r:2,c:1}},   // 累计流量
+    {s:{r:1,c:2},e:{r:2,c:2}},   // 累计修正流量
+    {s:{r:1,c:3},e:{r:1,c:5}},   // SO2上限
+    {s:{r:1,c:6},e:{r:1,c:8}},   // SO2修正
+    {s:{r:1,c:9},e:{r:1,c:11}},  // NOx上限
+    {s:{r:1,c:12},e:{r:1,c:14}}, // NOx修正
+    {s:{r:1,c:15},e:{r:2,c:15}}, // NH3监测
+    {s:{r:1,c:16},e:{r:2,c:16}}, // NH3修正
+    {s:{r:1,c:17},e:{r:2,c:17}}, // NH3豁免
+    {s:{r:1,c:18},e:{r:2,c:18}}, // 流速监测
+    {s:{r:1,c:19},e:{r:2,c:19}}, // 流速修正
+    {s:{r:1,c:20},e:{r:2,c:20}}, // 温度监测
+    {s:{r:1,c:21},e:{r:2,c:21}}, // 温度修正
+    {s:{r:1,c:22},e:{r:2,c:22}}, // 湿度监测
+    {s:{r:1,c:23},e:{r:2,c:23}}, // 湿度修正
+    {s:{r:1,c:24},e:{r:2,c:24}}, // 压力监测
+    {s:{r:1,c:25},e:{r:2,c:25}}, // 压力修正
+  ];
+
+  function getDomRows(tbodyId) {
+    const rows = [];
+    document.querySelectorAll('#' + tbodyId + ' tr').forEach(tr => {
+      rows.push(Array.from(tr.querySelectorAll('td')).map(td => stripHtml(td.textContent)));
+    });
+    return rows;
+  }
+
+  function getExportRows() {
+    if (periodType === '月')    return getDomRows('monthly-tbody');
+    if (periodType === '季度')  return getDomRows('view-quarter tbody');  // seasonal has inline tbody
+    if (periodType === '年')    return getDomRows('annual-tbody');
+    return [];
+  }
+
+  function handleExport() {
+    const XLSX = window.XLSX;
+    if (!XLSX) {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
+      s.onload = handleExport;
+      document.head.appendChild(s);
+      return;
+    }
+
+    const outletLabel = document.getElementById('outletLabel').textContent;
+    const periodLabel = document.getElementById('periodLabel').textContent;
+    const filename = `监测报表_${outletLabel}_${periodLabel}.xlsx`;
+
+    const dataRows = getExportRows();
+    const aoa = [H1, H2, H3, ...dataRows];
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!merges'] = MERGES;
+
+    // Column widths
+    ws['!cols'] = [
+      {wch:8},  // 时间
+      {wch:14},{wch:14}, // 流量
+      {wch:10},{wch:10},{wch:14},{wch:10},{wch:14},{wch:14}, // SO2
+      {wch:10},{wch:10},{wch:14},{wch:10},{wch:14},{wch:14}, // NOx
+      {wch:10},{wch:10},{wch:10}, // NH3
+      {wch:10},{wch:10}, // 流速
+      {wch:10},{wch:10}, // 温度
+      {wch:10},{wch:10}, // 湿度
+      {wch:10},{wch:10}, // 压力
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, periodLabel.slice(0, 31));
+    XLSX.writeFile(wb, filename);
+  }
+</script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</body>
+</html>
