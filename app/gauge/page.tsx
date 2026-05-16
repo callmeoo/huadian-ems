@@ -59,10 +59,10 @@ const ITEM_H = 44;
 function DrumPicker({ items, value, onChange }: { items: string[]; value: string; onChange: (v: string) => void }) {
   const allItems = useMemo(() => ["", "", ...items, "", ""], [items]);
   const ref = useRef<HTMLDivElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const scrollTo = useCallback((realIdx: number) => {
-    ref.current && (ref.current.scrollTop = realIdx * ITEM_H);
+    if (ref.current) ref.current.scrollTop = realIdx * ITEM_H;
   }, []);
 
   useEffect(() => {
@@ -108,8 +108,12 @@ function CalendarPicker({ start, end, onChange }: { start: string; end: string; 
   const [sel2, setSel2] = useState(end);
   const [phase, setPhase] = useState<"start" | "end">("start");
 
-  function prev() { vm === 1 ? (setVy(y => y - 1), setVm(12)) : setVm(m => m - 1); }
-  function next() { vm === 12 ? (setVy(y => y + 1), setVm(1)) : setVm(m => m + 1); }
+  function prev() {
+    if (vm === 1) { setVy(y => y - 1); setVm(12); } else { setVm(m => m - 1); }
+  }
+  function next() {
+    if (vm === 12) { setVy(y => y + 1); setVm(1); } else { setVm(m => m + 1); }
+  }
 
   function tap(ds: string) {
     if (phase === "start") {
