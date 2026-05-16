@@ -429,20 +429,30 @@ export default function ReportPage() {
       return s;
     };
 
-    const lines = [H1, H2, ...tableRows.map(({ row }) => row.map(stripCell))]
+    const csv = [H1, H2, ...tableRows.map(({ row }) => row.map(stripCell))]
       .map((r) => r.map(escCell).join(","))
       .join("\r\n");
 
-    // 加 UTF-8 BOM，避免 Excel 直接打开时中文乱码
-    const blob = new Blob(["﻿" + lines], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `监测报表_${outlet}_${period}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/api/report/export";
+    form.style.display = "none";
+
+    const csvField = document.createElement("input");
+    csvField.type = "hidden";
+    csvField.name = "csv";
+    csvField.value = csv;
+    form.appendChild(csvField);
+
+    const nameField = document.createElement("input");
+    nameField.type = "hidden";
+    nameField.name = "filename";
+    nameField.value = `监测报表_${outlet}_${period}.csv`;
+    form.appendChild(nameField);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   }
 
   return (

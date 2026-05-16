@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { toStandard } from "@/lib/verification/serializers";
+import { STANDARDS } from "@/components/verification/data";
 
 interface PatchBody {
   active?: boolean;
@@ -16,14 +15,14 @@ export async function PATCH(
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
   }
 
-  const body = (await request.json()) as PatchBody;
-  const updated = await prisma.verificationStandard.update({
-    where: { id: standardId },
-    data: {
-      ...(typeof body.active === "boolean" ? { active: body.active } : {}),
-      updatedAt: new Date().toISOString().substring(0, 10),
-    },
-  });
+  const standard = STANDARDS.find((s) => s.id === standardId);
+  if (!standard) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
 
-  return NextResponse.json(toStandard(updated));
+  const body = (await request.json()) as PatchBody;
+  if (typeof body.active === "boolean") standard.active = body.active;
+  standard.updatedAt = new Date().toISOString().substring(0, 10);
+
+  return NextResponse.json(standard);
 }

@@ -38,7 +38,7 @@ const INITIAL_DATA: LimitMap = {
 export default function SettingsPage() {
   const router = useRouter();
 
-  const [tab, setTab] = useState<SettingTab>("limit");
+  const [tab, setTab] = useState<SettingTab>("basic");
   const [enterprise, setEnterprise] = useState(ENTERPRISES[0]);
   const [outlet, setOutlet]         = useState(OUTLETS[0]);
   const [openDropdown, setOpenDropdown] = useState<DropdownKey | null>(null);
@@ -232,12 +232,13 @@ export default function SettingsPage() {
           })}
         </div>
 
-        {/* Filter pills */}
+        {/* Filter pills — 仅「报警限值」tab 显示 */}
         <div
           ref={filterBarRef}
           style={{
             position: "relative", zIndex: 1,
-            display: "flex", gap: 8,
+            display: tab === "limit" ? "flex" : "none",
+            gap: 8,
             padding: "4px 14px 14px",
           }}
         >

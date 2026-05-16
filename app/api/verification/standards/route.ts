@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { toStandard } from "@/lib/verification/serializers";
+import { STANDARDS } from "@/components/verification/data";
+import type { VerificationStandard } from "@/components/verification/types";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
 
-  const standards = await prisma.verificationStandard.findMany({
-    where: type && type !== "all" ? { type } : undefined,
-    orderBy: { id: "asc" },
-  });
+  let list = STANDARDS.slice();
+  if (type && type !== "all") list = list.filter((s) => s.type === type);
+  list.sort((a, b) => a.id - b.id);
 
-  return NextResponse.json(standards.map(toStandard));
+  return NextResponse.json(list);
 }
 
 interface CreateBody {
@@ -32,21 +31,22 @@ export async function POST(request: Request) {
   }
 
   const today = new Date().toISOString().substring(0, 10);
+  const nextId = STANDARDS.reduce((m, s) => Math.max(m, s.id), 0) + 1;
 
-  const created = await prisma.verificationStandard.create({
-    data: {
-      type: body.type,
-      indicator: body.indicator,
-      methods: JSON.stringify(body.methods),
-      standardLimit: body.limit,
-      sampleMin: body.sampleMin || 5,
-      deviationMax: body.deviationMax || "±15%",
-      source: body.source,
-      sourceDoc: body.sourceDoc || "未命名引用文件",
-      active: true,
-      updatedAt: today,
-    },
-  });
+  const created: VerificationStandard = {
+    id: nextId,
+    type: body.type,
+    indicator: body.indicator,
+    methods: body.methods,
+    limit: body.limit,
+    sampleMin: body.sampleMin || 5,
+    deviationMax: body.deviationMax || "±15%",
+    source: body.source,
+    sourceDoc: body.sourceDoc || "未命名引用文件",
+    active: true,
+    updatedAt: today,
+  };
+  STANDARDS.push(created);
 
-  return NextResponse.json(toStandard(created), { status: 201 });
+  return NextResponse.json(created, { status: 201 });
 }

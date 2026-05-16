@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { toReportDetail } from "@/lib/verification/serializers";
+import { REPORTS } from "@/components/verification/data";
 
 export async function GET(
   _request: Request,
@@ -12,21 +11,10 @@ export async function GET(
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
   }
 
-  const report = await prisma.thirdPartyReport.findUnique({
-    where: { id: reportId },
-    include: {
-      formItems: true,
-      instruments: true,
-      samplings: true,
-      noiseItems: true,
-      attachments: true,
-      reviewLogs: { orderBy: { id: "asc" } },
-    },
-  });
-
+  const report = REPORTS.find((r) => r.id === reportId);
   if (!report) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  return NextResponse.json(toReportDetail(report));
+  return NextResponse.json(report);
 }

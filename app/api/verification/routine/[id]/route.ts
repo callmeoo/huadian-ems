@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { toRoutineDetail } from "@/lib/verification/serializers";
+import { ROUTINE_TASKS } from "@/components/verification/data";
 
 export async function GET(
   _request: Request,
@@ -12,17 +11,10 @@ export async function GET(
     return NextResponse.json({ error: "invalid id" }, { status: 400 });
   }
 
-  const task = await prisma.routineTask.findUnique({
-    where: { id: taskId },
-    include: {
-      attachments: { orderBy: { id: "asc" } },
-      history: { orderBy: { id: "desc" } },
-    },
-  });
-
+  const task = ROUTINE_TASKS.find((t) => t.id === taskId);
   if (!task) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  return NextResponse.json(toRoutineDetail(task));
+  return NextResponse.json(task);
 }

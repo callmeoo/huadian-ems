@@ -1,16 +1,29 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { toRoutineCard } from "@/lib/verification/serializers";
+import { ROUTINE_TASKS } from "@/components/verification/data";
+import type { RoutineTask, RoutineDetail } from "@/components/verification/types";
+
+function toCard(t: RoutineDetail): RoutineTask {
+  return {
+    id: t.id,
+    name: t.name,
+    period: t.period,
+    category: t.category,
+    owner: t.owner,
+    lastCompleted: t.lastCompleted,
+    nextDue: t.nextDue,
+    dueLevel: t.dueLevel,
+    dueLabel: t.dueLabel,
+    attachmentCount: t.attachments.length,
+  };
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const period = searchParams.get("period");
 
-  const tasks = await prisma.routineTask.findMany({
-    where: period && period !== "all" ? { period } : undefined,
-    include: { attachments: { select: { id: true } } },
-    orderBy: { id: "asc" },
-  });
+  let list = ROUTINE_TASKS.slice();
+  if (period && period !== "all") list = list.filter((t) => t.period === period);
+  list.sort((a, b) => a.id - b.id);
 
-  return NextResponse.json(tasks.map((t) => toRoutineCard(t)));
+  return NextResponse.json(list.map(toCard));
 }
