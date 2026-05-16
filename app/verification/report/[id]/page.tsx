@@ -22,6 +22,7 @@ import TabBar from "@/components/layout/TabBar";
 import { TypeIconBox, StatusBadge } from "@/components/verification/Badges";
 import type {
   ReportDetail,
+  ReportStatus,
   VerificationItem,
   InstrumentItem,
   SamplingItem,
@@ -425,6 +426,27 @@ export default function ReportDetailPage() {
         const updated: ReportDetail = await res.json();
         setBaseReport(updated);
         setReviewOpen(false);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleMockStatus = async (target: ReportStatus) => {
+    if (submitting || status === target) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(
+        `/api/verification/reports/${reportId}/mock-status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: target }),
+        },
+      );
+      if (res.ok) {
+        const updated: ReportDetail = await res.json();
+        setBaseReport(updated);
       }
     } finally {
       setSubmitting(false);
@@ -914,66 +936,108 @@ export default function ReportDetailPage() {
         </div>
       </div>
 
-      {/* Sticky review action */}
-      {(isFail || status === "pending") && (
+      {/* Sticky bottom controls */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 60,
+          left: 0,
+          right: 0,
+          background: "#fff",
+          borderTop: "1px solid #ebeef2",
+          zIndex: 90,
+        }}
+      >
+        {/* 演示工具：在三种状态间任意切换（仅用于演示/调试，可反复试） */}
         <div
           style={{
-            position: "fixed",
-            bottom: 60,
-            left: 0,
-            right: 0,
-            background: "#fff",
-            borderTop: "1px solid #ebeef2",
-            padding: "10px 14px",
+            padding: "8px 14px",
             display: "flex",
-            gap: 10,
-            zIndex: 90,
+            alignItems: "center",
+            gap: 8,
+            borderBottom: (isFail || status === "pending") ? "1px solid #f0f3f7" : "none",
           }}
         >
-          <button
-            onClick={() => handleReview(true)}
-            style={{
-              flex: 1,
-              background: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
-              color: "#fff",
-              border: "none",
-              borderRadius: 10,
-              padding: "10px 0",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 5,
-            }}
-          >
-            <ShieldCheck size={14} color="#fff" />
-            人工复核为合格
-          </button>
-          <button
-            onClick={() => setReviewOpen(true)}
-            style={{
-              flex: 1,
-              background: "#fff",
-              color: "#cf1322",
-              border: "1px solid #ffa39e",
-              borderRadius: 10,
-              padding: "10px 0",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 5,
-            }}
-          >
-            <XCircle size={14} color="#cf1322" />
-            驳回报告
-          </button>
+          <span style={{ fontSize: 11, color: "#8090a8", flexShrink: 0 }}>演示工具</span>
+          {(["pass", "fail", "pending"] as ReportStatus[]).map((s) => {
+            const active = status === s;
+            const label = s === "pass" ? "合格" : s === "fail" ? "不合格" : "待核验";
+            const fg = s === "pass" ? "#389e0d" : s === "fail" ? "#cf1322" : "#d46b08";
+            const bg = s === "pass" ? "#f0fff4" : s === "fail" ? "#fff1f0" : "#fff7e0";
+            return (
+              <button
+                key={s}
+                onClick={() => handleMockStatus(s)}
+                disabled={active || submitting}
+                style={{
+                  flex: 1,
+                  padding: "5px 0",
+                  borderRadius: 8,
+                  border: active ? `1px solid ${fg}` : "1px solid #ebeef2",
+                  background: active ? bg : "#fff",
+                  color: active ? fg : "#6b7a8c",
+                  fontSize: 12,
+                  fontWeight: active ? 600 : 500,
+                  cursor: active || submitting ? "default" : "pointer",
+                  opacity: submitting ? 0.6 : 1,
+                  outline: "none",
+                  transition: "background 0.15s, border 0.15s",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
-      )}
+
+        {/* 人工复核操作：仅在不合格/待核验时显示 */}
+        {(isFail || status === "pending") && (
+          <div style={{ padding: "10px 14px", display: "flex", gap: 10 }}>
+            <button
+              onClick={() => handleReview(true)}
+              style={{
+                flex: 1,
+                background: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 10,
+                padding: "10px 0",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 5,
+              }}
+            >
+              <ShieldCheck size={14} color="#fff" />
+              人工复核为合格
+            </button>
+            <button
+              onClick={() => setReviewOpen(true)}
+              style={{
+                flex: 1,
+                background: "#fff",
+                color: "#cf1322",
+                border: "1px solid #ffa39e",
+                borderRadius: 10,
+                padding: "10px 0",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 5,
+              }}
+            >
+              <XCircle size={14} color="#cf1322" />
+              驳回报告
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Reject confirm modal */}
       {reviewOpen && (

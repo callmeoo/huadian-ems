@@ -4,9 +4,9 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import TabBar from "@/components/layout/TabBar";
 import {
-  Zap, Building2, Activity, AlertTriangle,
-  PieChart, FileText, ShieldCheck, BarChart3,
-  LayoutGrid, Check, Plus, Gauge, SlidersHorizontal,
+  Zap, Building2, Activity, AlertTriangle, Siren,
+  PieChart, FileText, ShieldCheck, BarChart3, BookmarkCheck,
+  LayoutGrid, Check, Plus, Gauge, ClipboardCheckIcon, SlidersHorizontal,
   Bell, BookOpen, ClipboardList, HardDrive, Package,
 } from "lucide-react";
 
@@ -19,19 +19,28 @@ type WorkspaceModule = {
 };
 
 const ALL_MODULES: WorkspaceModule[] = [
+  // 行 1
   { id: "enterprise",   name: "企业档案",   icon: <Building2 />,          color: "c-cyan",   href: "/enterprise" },
   { id: "anomaly",      name: "超标异常",   icon: <AlertTriangle />,      color: "c-orange", href: "/anomaly" },
+  { id: "stats",        name: "数据统计",   icon: <PieChart />,           color: "c-green",  href: "/stats" },
+  // 行 2
   { id: "control",      name: "超标管控",   icon: <ShieldCheck />,        color: "c-red",    href: "/control" },
-  { id: "monitor",      name: "实时监控",   icon: <Activity />,           color: "c-blue",   href: "/monitor" },
   { id: "emission",     name: "排放量统计", icon: <BarChart3 />,          color: "c-green",  href: "/emission" },
   { id: "report",       name: "监测报表",   icon: <FileText />,           color: "c-teal",   href: "/report" },
-  { id: "stats",        name: "数据统计",   icon: <PieChart />,           color: "c-green",  href: "/stats" },
+  // 行 3
+  { id: "bookmark",     name: "标记查阅",   icon: <BookmarkCheck />,      color: "c-blue",   href: "/bookmark" },
   { id: "gauge",        name: "有效传输率", icon: <Gauge />,              color: "c-teal",   href: "/gauge" },
   { id: "notification", name: "工作通知",   icon: <Bell />,               color: "c-red",    href: "/notifications" },
+  // 行 4
   { id: "verification", name: "第三方检测", icon: <ClipboardList />,      color: "c-purple", href: "/verification" },
-  { id: "equipment",    name: "设备管理",   icon: <HardDrive />,          color: "c-blue",   href: "/equipment" },
-  { id: "parts",        name: "备件库",     icon: <Package />,            color: "c-purple", href: "/parts" },
+  { id: "monitor",      name: "实时监控",   icon: <Activity />,           color: "c-blue",   href: "/monitor" },
   { id: "settings",     name: "报警设置",   icon: <SlidersHorizontal />,  color: "c-gray",   href: "/settings" },
+  // 行 5
+  { id: "warning",      name: "超标预警",   icon: <Siren />,              color: "c-red",    href: "/warning" },
+  { id: "supervise",    name: "督办查阅",   icon: <ClipboardCheckIcon />, color: "c-purple", href: "/supervise" },
+  { id: "equipment",    name: "设备管理",   icon: <HardDrive />,          color: "c-blue",   href: "/equipment" },
+  // 行 6
+  { id: "parts",        name: "备件库",     icon: <Package />,            color: "c-purple", href: "/parts" },
   { id: "training",     name: "培训考试",   icon: <BookOpen />,           color: "c-teal",   href: "/training" },
 ];
 
@@ -39,7 +48,7 @@ const MODULE_REGISTRY: Record<string, WorkspaceModule> = Object.fromEntries(
   ALL_MODULES.map((m) => [m.id, m]),
 );
 
-const STORAGE_KEY = "workspace.modules.v2";
+const STORAGE_KEY = "workspace.modules.v3";
 
 const COLOR_MAP: Record<string, { bg: string; icon: string }> = {
   "c-blue":   { bg: "#e6f4ff", icon: "#1677ff" },
