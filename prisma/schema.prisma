@@ -1,24 +1,22 @@
+// 本地开发用 SQLite（详见 CLAUDE.md「本地开发数据库」章节）
+// 部署到内网 PostgreSQL 时切换 provider + DATABASE_URL，并把 Role 字段恢复为 enum。
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  STAFF
-  LEADER
-}
-
+// Role 合法值：ADMIN | STAFF | LEADER
 model User {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
   password  String
-  role      Role     @default(STAFF)
+  role      String   @default("STAFF")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -43,28 +41,225 @@ model EmissionRecord {
 
 // 报警记录
 model AlertRecord {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   unitId     String
-  type       String   // over_limit | warn | missing | anomaly
-  pollutant  String?  // nox | so2 | dust
+  type       String    // over_limit | warn | missing | anomaly
+  pollutant  String?   // nox | so2 | dust
   value      Float?
   threshold  Float?
   occurredAt DateTime
   resolvedAt DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@index([unitId, occurredAt])
 }
 
 // 设备台账
 model Equipment {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
   unitId       String
-  type         String   // CEMS | FGD | SCR | ...
+  type         String    // CEMS | FGD | SCR | ...
   manufacturer String?
   installedAt  DateTime?
-  status       String   @default("normal") // normal | maintenance | fault
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status       String    @default("normal") // normal | maintenance | fault
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// ─── 核验模块 ─────────────────────────────────────────
+
+// 第三方检测报告
+// type: gas | water | noise
+// status: pass | fail | pending
+// dueLevel: very-soon | soon | normal | overdue
+model ThirdPartyReport {
+  id              Int       @id @default(autoincrement())
+  title           String
+  type            String
+  reportNo        String    @unique
+  unit            String
+  outlet          String
+  agency          String
+  samplingPeriod  String
+  reportDate      String    // YYYY-MM-DD
+  nextDate        String
+  dueLabel        String
+  dueLevel        String
+  status          String    @default("pending")
+  manualReviewed  Boolean   @default(false)
+  failCount       Int?
+  urgent          Boolean   @default(false)
+  danger          Boolean   @default(false)
+
+  formItems       ReportFormItem[]
+  instruments     ReportInstrument[]
+  samplings       ReportSampling[]
+  noiseItems      ReportNoise[]
+  attachments     ReportAttachment[]
+  reviewLogs      ReportReviewLog[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([type, reportDate])
+  @@index([status])
+}
+
+model ReportFormItem {
+  id            Int    @id @default(autoincrement())
+  reportId      Int
+  label         String
+  reportValue   String
+  requiredValue String
+  pass          Boolean
+
+  report ThirdPartyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model ReportInstrument {
+  id               Int     @id @default(autoincrement())
+  reportId         Int
+  name             String
+  model            String
+  calibrationDate  String
+  certValidUntil   String
+  pass             Boolean
+
+  report ThirdPartyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model ReportSampling {
+  id            Int     @id @default(autoincrement())
+  reportId      Int
+  indicator     String
+  sampleCount   Int
+  minRequired   Int
+  reportMean    String
+  cemsMean      String
+  deviation     String
+  maxDeviation  String
+  pass          Boolean
+
+  report ThirdPartyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model ReportNoise {
+  id           Int     @id @default(autoincrement())
+  reportId     Int
+  pointName    String
+  duration     String
+  minDuration  String
+  value        String
+  noiseLimit   String  // 避开 `limit` 关键字
+  pass         Boolean
+
+  report ThirdPartyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+// type: pdf | image | excel | doc
+model ReportAttachment {
+  id        Int    @id @default(autoincrement())
+  reportId  Int
+  name      String
+  size      String
+  type      String
+
+  report ThirdPartyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model ReportReviewLog {
+  id        Int      @id @default(autoincrement())
+  reportId  Int
+  actor     String
+  action    String
+  reason    String?
+  time      String
+
+  report ThirdPartyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+// ─── 定期工作核验 ─────────────────────────────────────
+
+// period: daily | weekly | monthly | quarterly
+// dueLevel: very-soon | soon | normal | overdue
+model RoutineTask {
+  id              Int       @id @default(autoincrement())
+  name            String
+  period          String
+  category        String
+  owner           String
+  lastCompleted   String
+  nextDue         String
+  dueLevel        String
+  dueLabel        String
+  description     String
+  basis           String
+  frequencyText   String
+
+  attachments     RoutineAttachment[]
+  history         RoutineHistory[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([period, dueLevel])
+}
+
+model RoutineAttachment {
+  id       Int    @id @default(autoincrement())
+  taskId   Int
+  name     String
+  size     String
+  type     String
+
+  task RoutineTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model RoutineHistory {
+  id      Int    @id @default(autoincrement())
+  taskId  Int
+  time    String
+  actor   String
+  note    String
+
+  task RoutineTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// ─── 核验标准 ───────────────────────────────────────
+
+// type: gas | water | noise
+// source: national | group | expert
+model VerificationStandard {
+  id            Int      @id @default(autoincrement())
+  type          String
+  indicator     String
+  methods       String   // JSON 数组字符串: ["HJ 692-2014", "HJ 693-2014"]
+  standardLimit String   // 避开 `limit` 关键字
+  sampleMin     Int
+  deviationMax  String
+  source        String
+  sourceDoc     String
+  active        Boolean  @default(true)
+  updatedAt     String   // YYYY-MM-DD（手动维护，区别于自动 timestamp）
+
+  createdAt     DateTime @default(now())
+
+  @@index([type, active])
 }

@@ -6,8 +6,8 @@ import TabBar from "@/components/layout/TabBar";
 import {
   Zap, Building2, Activity, AlertTriangle, Siren,
   PieChart, FileText, ShieldCheck, BarChart3, BookmarkCheck,
-  LayoutGrid, Check, Plus, Gauge, ClipboardCheckIcon, SlidersHorizontal, Thermometer,
-  Bell, BookOpen, ClipboardList,
+  LayoutGrid, Check, Plus, Gauge, ClipboardCheckIcon, SlidersHorizontal,
+  Bell, BookOpen, ClipboardList, HardDrive, Package,
 } from "lucide-react";
 
 type WorkspaceModule = {
@@ -34,7 +34,8 @@ const ALL_MODULES: WorkspaceModule[] = [
   { id: "settings", name: "报警设置", icon: <SlidersHorizontal />, color: "c-gray", href: "/settings" },
   { id: "warning", name: "超标预警", icon: <Siren />, color: "c-red", href: "/warning" },
   { id: "supervise", name: "督办查阅", icon: <ClipboardCheckIcon />, color: "c-purple", href: "/supervise" },
-  { id: "temp", name: "温度监测", icon: <Thermometer />, color: "c-orange", href: "/temp" },
+  { id: "equipment", name: "设备管理", icon: <HardDrive />, color: "c-blue", href: "/equipment" },
+  { id: "parts", name: "备件库", icon: <Package />, color: "c-purple", href: "/parts" },
 ];
 
 const MODULE_REGISTRY: Record<string, WorkspaceModule> = Object.fromEntries(
@@ -90,7 +91,6 @@ const NOTIFICATIONS = [
 export default function HomePage() {
   const [activeAlert, setActiveAlert] = useState<AlertType>("all");
   const [editing, setEditing] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [moduleIds, setModuleIds] = useState<string[]>(() => ALL_MODULES.map((m) => m.id));
   const hydratedRef = useRef(false);
@@ -271,10 +271,10 @@ export default function HomePage() {
               background: "#f5222d", borderRadius: 10, padding: "1px 8px",
             }}>{NOTIFICATIONS.filter(n => n.urgent).length} 条重要</span>
           </div>
-          <button
-            onClick={() => setNotifOpen(true)}
+          <Link
+            href="/notifications"
             style={{
-              width: "100%", textAlign: "left", outline: "none", cursor: "pointer", border: "none",
+              display: "block", width: "100%", textDecoration: "none",
               background: "#fff1f0",
               borderRadius: 12,
               borderLeft: "4px solid #f5222d",
@@ -292,15 +292,11 @@ export default function HomePage() {
                   {NOTIFICATIONS[0].body}
                 </div>
               </div>
-              <Link
-                href="/notifications"
-                onClick={(e) => e.stopPropagation()}
-                style={{ fontSize: 11, color: "#cf1322", flexShrink: 0, alignSelf: "center", textDecoration: "none" }}
-              >
+              <span style={{ fontSize: 11, color: "#cf1322", flexShrink: 0, alignSelf: "center" }}>
                 共 {NOTIFICATIONS.length} 条 ›
-              </Link>
+              </span>
             </div>
-          </button>
+          </Link>
         </div>
 
         {/* Workspace */}
@@ -448,65 +444,6 @@ export default function HomePage() {
                   </button>
                 );
               })}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Notification modal */}
-      {notifOpen && (
-        <>
-          <div
-            onClick={() => setNotifOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 300 }}
-          />
-          <div style={{
-            position: "fixed", left: 0, right: 0, bottom: 60,
-            background: "#fff", borderRadius: "20px 20px 0 0", zIndex: 301,
-            maxHeight: "75vh", display: "flex", flexDirection: "column",
-          }}>
-            <div style={{ width: 36, height: 4, background: "#e0e6ef", borderRadius: 2, margin: "12px auto 0" }} />
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "14px 20px 12px", borderBottom: "1px solid #f0f3f7", flexShrink: 0,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Bell size={17} color="#f5222d" />
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>工作通知</span>
-                <span style={{ fontSize: 11, background: "#fff1f0", color: "#f5222d", borderRadius: 8, padding: "1px 8px", fontWeight: 600 }}>
-                  {NOTIFICATIONS.length} 条
-                </span>
-              </div>
-              <button
-                onClick={() => setNotifOpen(false)}
-                style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "#f0f3f7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#6b7a8c" }}
-              >×</button>
-            </div>
-            <div style={{ overflowY: "auto", padding: "10px 16px 20px" }}>
-              {NOTIFICATIONS.map((n, i) => (
-                <div key={n.id} style={{
-                  paddingTop: i === 0 ? 4 : 12,
-                  paddingBottom: 12,
-                  borderBottom: i < NOTIFICATIONS.length - 1 ? "1px solid #f0f3f7" : "none",
-                }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                    <div style={{
-                      width: 8, height: 8, borderRadius: "50%", marginTop: 5, flexShrink: 0,
-                      background: n.urgent ? "#f5222d" : "#d0dae8",
-                    }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-                        {n.urgent && (
-                          <span style={{ fontSize: 10, background: "#f5222d", color: "#fff", borderRadius: 4, padding: "1px 6px", fontWeight: 600, flexShrink: 0 }}>紧急</span>
-                        )}
-                        <span style={{ fontSize: 13, fontWeight: 600, color: n.urgent ? "#cf1322" : "#1a1a1a", lineHeight: 1.4 }}>{n.title}</span>
-                      </div>
-                      <p style={{ fontSize: 12, color: "#6b7a8c", lineHeight: 1.7, margin: 0 }}>{n.body}</p>
-                      <div style={{ fontSize: 11, color: "#8090a8", marginTop: 6 }}>{n.time}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </>

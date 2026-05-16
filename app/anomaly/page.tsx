@@ -26,39 +26,62 @@ interface DateRange {
 }
 
 const ALL_RECORDS: AnomalyRecord[] = [
-  { id: 1,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "120.662 mg/m³", limit: "100 mg/m³", exceedRatio: "+20.7%", time: "2026-05-03 14:00", type: "over" },
-  { id: 2,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "102.157 mg/m³", limit: "100 mg/m³", exceedRatio: "+2.2%",  time: "2026-05-03 13:00", type: "over" },
-  { id: 3,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "1809.97 mg/m³", limit: "100 mg/m³", exceedRatio: "+1710%", time: "2026-05-02 09:00", type: "over" },
-  { id: 4,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "163.43 mg/m³",  limit: "100 mg/m³", exceedRatio: "+63.4%", time: "2026-05-02 08:00", type: "over" },
-  { id: 5,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "114.663 mg/m³", limit: "100 mg/m³", exceedRatio: "+14.7%", time: "2026-05-01 22:00", type: "over" },
-  { id: 6,  point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.003 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-03 16:00", type: "abnormal" },
-  { id: 7,  point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.017 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-03 16:00", type: "abnormal" },
-  { id: 8,  point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.012 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-03 15:00", type: "abnormal" },
-  { id: 9,  point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.005 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-03 15:00", type: "abnormal" },
-  { id: 10, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-03 12:00", type: "abnormal" },
-  { id: 11, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-03 12:00", type: "abnormal" },
-  { id: 12, point: "废气排放口01", pollutant: "氮氧化物", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-03 12:00", type: "abnormal" },
-  { id: 13, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.008 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-03 11:00", type: "abnormal" },
-  { id: 14, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.021 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-03 10:00", type: "abnormal" },
-  { id: 15, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "-0.001 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-02 14:00", type: "abnormal" },
-  { id: 16, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-03 08:00", type: "abnormal" },
-  { id: 17, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.006 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-02 22:00", type: "abnormal" },
-  { id: 18, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.009 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-02 21:00", type: "abnormal" },
-  { id: 19, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-02 20:00", type: "abnormal" },
-  { id: 20, point: "废气排放口01", pollutant: "氮氧化物", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-02 19:00", type: "abnormal" },
-  { id: 21, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.004 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-02 18:00", type: "abnormal" },
-  { id: 22, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.011 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-02 17:00", type: "abnormal" },
-  { id: 23, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "-0.002 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-02 14:00", type: "abnormal" },
-  { id: 24, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-02 13:00", type: "abnormal" },
-  { id: 25, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.007 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-02 11:00", type: "abnormal" },
-  { id: 26, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "-0.003 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-01 23:00", type: "abnormal" },
-  { id: 27, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-01 21:00", type: "abnormal" },
-  { id: 28, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "-0.001 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-01 20:00", type: "abnormal" },
-  { id: 29, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.005 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-01 19:00", type: "abnormal" },
-  { id: 30, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.014 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-01 18:00", type: "abnormal" },
-  { id: 31, point: "废气排放口01", pollutant: "氮氧化物", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-01 17:00", type: "abnormal" },
-  { id: 32, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "-0.002 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-01 16:00", type: "abnormal" },
-  { id: 33, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-01 15:00", type: "abnormal" },
+  // ── May 2026 ──
+  { id: 1,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "118.452 mg/m³", limit: "100 mg/m³", exceedRatio: "+18.5%", time: "2026-05-15 16:00", type: "over" },
+  { id: 2,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "104.213 mg/m³", limit: "100 mg/m³", exceedRatio: "+4.2%",  time: "2026-05-14 10:00", type: "over" },
+  { id: 3,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "131.890 mg/m³", limit: "100 mg/m³", exceedRatio: "+31.9%", time: "2026-05-12 08:00", type: "over" },
+  { id: 4,  point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "215.380 mg/m³", limit: "200 mg/m³", exceedRatio: "+7.7%",  time: "2026-05-10 21:00", type: "over" },
+  { id: 5,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "120.662 mg/m³", limit: "100 mg/m³", exceedRatio: "+20.7%", time: "2026-05-08 14:00", type: "over" },
+  { id: 6,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "102.157 mg/m³", limit: "100 mg/m³", exceedRatio: "+2.2%",  time: "2026-05-08 13:00", type: "over" },
+  { id: 7,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "180.997 mg/m³", limit: "100 mg/m³", exceedRatio: "+81.0%", time: "2026-05-05 09:00", type: "over" },
+  { id: 8,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "163.43 mg/m³",  limit: "100 mg/m³", exceedRatio: "+63.4%", time: "2026-05-02 08:00", type: "over" },
+  { id: 9,  point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "114.663 mg/m³", limit: "100 mg/m³", exceedRatio: "+14.7%", time: "2026-05-01 22:00", type: "over" },
+
+  { id: 10, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.003 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-16 11:00", type: "abnormal" },
+  { id: 11, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.017 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-15 09:00", type: "abnormal" },
+  { id: 12, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "-0.012 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-14 15:00", type: "abnormal" },
+  { id: 13, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.005 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-13 19:00", type: "abnormal" },
+  { id: 14, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-12 12:00", type: "abnormal" },
+  { id: 15, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-11 12:00", type: "abnormal" },
+  { id: 16, point: "废气排放口01", pollutant: "氮氧化物", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-10 12:00", type: "abnormal" },
+  { id: 17, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.008 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-09 11:00", type: "abnormal" },
+  { id: 18, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.021 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-08 10:00", type: "abnormal" },
+  { id: 19, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "-0.001 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-07 14:00", type: "abnormal" },
+  { id: 20, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-06 08:00", type: "abnormal" },
+  { id: 21, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.006 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-05 22:00", type: "abnormal" },
+  { id: 22, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.009 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-04 21:00", type: "abnormal" },
+  { id: 23, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-03 20:00", type: "abnormal" },
+  { id: 24, point: "废气排放口01", pollutant: "氮氧化物", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-05-02 19:00", type: "abnormal" },
+  { id: 25, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.004 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-05-01 18:00", type: "abnormal" },
+
+  // ── April 2026 ──
+  { id: 26, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "127.880 mg/m³", limit: "100 mg/m³", exceedRatio: "+27.9%", time: "2026-04-28 14:00", type: "over" },
+  { id: 27, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "108.430 mg/m³", limit: "100 mg/m³", exceedRatio: "+8.4%",  time: "2026-04-22 11:00", type: "over" },
+  { id: 28, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "223.150 mg/m³", limit: "200 mg/m³", exceedRatio: "+11.6%", time: "2026-04-15 17:00", type: "over" },
+  { id: 29, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "152.677 mg/m³", limit: "100 mg/m³", exceedRatio: "+52.7%", time: "2026-04-09 09:00", type: "over" },
+  { id: 30, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "116.342 mg/m³", limit: "100 mg/m³", exceedRatio: "+16.3%", time: "2026-04-03 22:00", type: "over" },
+
+  { id: 31, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.011 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-04-26 17:00", type: "abnormal" },
+  { id: 32, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "-0.002 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-04-20 14:00", type: "abnormal" },
+  { id: 33, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.007 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-04-12 11:00", type: "abnormal" },
+  { id: 34, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "-0.003 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-04-06 23:00", type: "abnormal" },
+  { id: 35, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-04-02 15:00", type: "abnormal" },
+
+  // ── March 2026 ──
+  { id: 36, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "112.560 mg/m³", limit: "100 mg/m³", exceedRatio: "+12.6%", time: "2026-03-25 13:00", type: "over" },
+  { id: 37, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "208.190 mg/m³", limit: "200 mg/m³", exceedRatio: "+4.1%",  time: "2026-03-18 09:00", type: "over" },
+  { id: 38, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.005 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-03-12 16:00", type: "abnormal" },
+  { id: 39, point: "废气排放口01", pollutant: "氮氧化物", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-03-06 11:00", type: "abnormal" },
+
+  // ── February 2026 ──
+  { id: 40, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "124.030 mg/m³", limit: "100 mg/m³", exceedRatio: "+24.0%", time: "2026-02-20 14:00", type: "over" },
+  { id: 41, point: "废气排放口02", pollutant: "二氧化硫", dataType: "小时", value: "-0.014 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-02-12 10:00", type: "abnormal" },
+  { id: 42, point: "废气排放口01", pollutant: "烟尘",     dataType: "小时", value: "-0.001 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-02-05 18:00", type: "abnormal" },
+
+  // ── January 2026 ──
+  { id: 43, point: "废气排放口02", pollutant: "氮氧化物", dataType: "小时", value: "110.880 mg/m³", limit: "100 mg/m³", exceedRatio: "+10.9%", time: "2026-01-22 11:00", type: "over" },
+  { id: 44, point: "废气排放口02", pollutant: "烟尘",     dataType: "小时", value: "-0.008 mg/m³",  limit: "—", exceedRatio: "—", time: "2026-01-15 14:00", type: "abnormal" },
+  { id: 45, point: "废气排放口01", pollutant: "二氧化硫", dataType: "小时", value: "0.000 mg/m³",   limit: "—", exceedRatio: "—", time: "2026-01-08 09:00", type: "abnormal" },
 ];
 
 const PAGE_SIZE = 10;
@@ -258,7 +281,7 @@ function RecordCard({ record, index }: { record: AnomalyRecord; index: number })
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-const DEFAULT_RANGE: DateRange = { startDate: "2026-05-01", endDate: "2026-05-03" };
+const DEFAULT_RANGE: DateRange = { startDate: "2026-05-01", endDate: "2026-05-16" };
 
 export default function AnomalyPage() {
   const router = useRouter();

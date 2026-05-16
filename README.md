@@ -11,7 +11,7 @@
 | 前端 | Next.js 15（App Router） + React 19 + TypeScript（strict） |
 | UI | shadcn/ui + Tailwind CSS + Lucide Icons |
 | 后端 | Next.js API Routes |
-| 数据库 | PostgreSQL + Prisma |
+| 数据库 | 本地开发 SQLite（`prisma/dev.db`）/ 部署 PostgreSQL，统一通过 Prisma |
 | 爬虫 | Playwright |
 | 定时任务 | node-cron（API Route 内） |
 | 鉴权 | NextAuth.js |
@@ -23,7 +23,7 @@
 
 - Node.js **≥ 18.18**（推荐 20.x，Next 15 不支持 Node 16）
 - pnpm 10+
-- PostgreSQL（如不需要数据库相关功能，可跳过 Prisma 初始化）
+- 数据库：本地默认 SQLite（`prisma/dev.db`，无需另装数据库），部署内网时切回 PostgreSQL（详见 [CLAUDE.md 的"本地开发数据库"章节](./CLAUDE.md#本地开发数据库重要)）
 
 ### 启动
 

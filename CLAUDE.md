@@ -351,7 +351,81 @@ Section 标题右侧可选：「查看全部 ›」`color: #1677ff` / 展开收�
 - ❌ 图标盒加渐变——只用纯色
 - ❌ 纯色平铺背景的 Hero 区（必须有渐变 + 点阵纹理）
 
-## 业务知识（待补充）
+## 业务知识
+
+### 核验模块（/verification）
+
+> 这一模块负责把**外部出具的数据/记录**与**内部规则**比对，给出合规结论。是平台的核心合规闸门。
+
+**两个对象**（顶层用 segmented switch 切换）：
+
+1. **第三方检测核验**：第三方机构出具的检测报告
+   - 分三类：废气 / 废水 / 噪声
+   - 每条报告归类到对应类型的栏目内
+2. **定期工作核验**：内部周期性合规任务
+   - 分四种周期：日 / 周 / 月 / 季
+
+#### 第三方核验：三类核验维度
+
+每一份报告进详情页时，按三个维度并列展示核验结果（可折叠卡片）：
+
+| 维度 | 比对内容 |
+|---|---|
+| **形式核验** | 报告中每项指标使用的检测方法 vs **排污许可证** 规定的标准方法（必须一致） |
+| **仪器核验** | 报告中使用的检测仪器是否在校准有效期内、是否具有计量资质 |
+| **采样数据比对** | (a) 采样组数是否达到最少要求（废气 ≥ 5）；(b) 同期 **CEMS 实测均值** 与报告均值的偏差是否在规范允许范围内 |
+
+**噪声特殊**：没有"采样数据比对"维度，改用「点位 + 采样时长」核验（每个点位实测值 ≤ 限值，采样时长 ≥ 10 min）。
+
+#### 状态机
+
+`pass / fail / pending` 三态 + **「已复核」布尔标记**（一个小徽章，独立显示）。不要把"自动通过"和"人工通过"做成两个独立状态，避免状态爆炸。
+
+- 自动核验通过 → `pass`，无「已复核」标
+- 自动核验不通过 → `fail`，无「已复核」标
+- 报告刚上传、未填关键字段 → `pending`
+- 人工复核后 → 状态可被覆盖（管理员认为系统误判可改成 `pass`），同时打上「已复核」小标，操作进 ReviewLog
+
+#### 定期工作核验：提醒规则（铁律，不要改）
+
+| 周期 | 提醒时机 |
+|---|---|
+| **日** | 不额外提醒（每天都要做，提醒变骚扰） |
+| **周** | 提前 **2 天** 提醒 |
+| **月** | 提前 **7 天** 提醒 |
+| **季** | 提前 **15 天** 提醒 |
+
+定期工作的详情页**只展示附件**（任务信息卡 + 工作说明 + 附件归档 + 历史时间线），**不做"打卡完成"按钮**。任务执行在线下完成，系统只做归档查阅。
+
+#### 核验标准（/verification/standards）
+
+第三方核验的判定依据。三个 tab：废气 / 废水 / 噪声（定期工作不依赖结构化标准，不进此页）。
+
+每条标准包含：
+- 指标名（氮氧化物 / COD / 厂界噪声等）
+- 允许的检测方法列表（多个）
+- 限值
+- 最少采样组数
+- 与 CEMS 偏差允许范围
+- **来源**：`national` 国家标准 / `group` 集团内规 / `expert` 专家意见
+- 引用文件（PDF 附件名）
+- `active` 开关：停用的标准不参与自动核验
+
+#### 关键文件位置
+
+- 列表 + 顶部 mode 切换：[app/verification/page.tsx](app/verification/page.tsx)
+- 报告详情：[app/verification/report/[id]/page.tsx](app/verification/report/[id]/page.tsx)
+- 定期工作详情：[app/verification/routine/[id]/page.tsx](app/verification/routine/[id]/page.tsx)
+- 标准录入：[app/verification/standards/page.tsx](app/verification/standards/page.tsx)
+- 共享组件 / 类型 / mock 数据：[components/verification/](components/verification/)
+
+### 本地开发数据库（重要）
+
+**项目部署目标依然是 PostgreSQL**，但本地开发用 **SQLite**（`prisma/dev.db`）简化环境，不需要装 Postgres 或 Docker。
+
+- 本地：`prisma/schema.prisma` 的 `provider = "sqlite"` + `url = "file:./dev.db"`（写在 `.env` 的 `DATABASE_URL`）
+- 部署内网时：把 `provider` 切回 `"postgresql"`，`DATABASE_URL` 改成实际 PostgreSQL 连接串，重跑 `prisma migrate dev --name init`（在干净的 PostgreSQL 实例上）
+- 由于 SQLite **不支持 enum**，所有原本想用 enum 的字段都用 String + 注释合法值（如 `Role` 的合法值是 `ADMIN | STAFF | LEADER`）。切回 PostgreSQL 后可恢复 enum
 
 [随着对业务理解加深，把华电特有的术语、流程、限制写到这里。例如：
 - 业务术语表

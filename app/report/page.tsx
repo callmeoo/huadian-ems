@@ -33,16 +33,6 @@ const DASH = "—";
 // 每行 25 个数据列；占位用 "—" / "--" / 字符串（"--" 代表本月尚无数据）
 type Row = [string, ...string[]];
 
-const QUARTER_ROWS: { cls?: string; row: Row }[] = [
-  { row: ["4月","25235.242","25182.951","41.026","43.102","484.027","—","—","—","—","—","—","—","—","—","39.345","—","—","19.643","—","105.094","—","11.143","—","-0.307","—"] },
-  { row: ["5月","11557.406","11480.097","40.022","42.518","395.640","—","—","—","—","—","—","—","—","—","36.132","—","—","20.034","—","104.158","—","12.003","—","-0.292","—"] },
-  { row: ["6月","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--"] },
-  { cls: "r-avg",   row: ["平均值","—","—","40.524","42.810","—","—","—","—","—","—","—","—","—","—","37.738","—","—","19.838","—","104.626","—","11.573","—","-0.300","—"] },
-  { cls: "r-max",   row: ["最大值","25235.242","25182.951","41.026","43.102","484.027","—","—","—","—","—","—","—","—","—","39.345","—","—","20.034","—","105.094","—","12.003","—","-0.292","—"] },
-  { cls: "r-min",   row: ["最小值","11557.406","11480.097","40.022","42.518","395.640","—","—","—","—","—","—","—","—","—","36.132","—","—","19.643","—","104.158","—","11.143","—","-0.307","—"] },
-  { cls: "r-total", row: ["季度排放总量（吨）","36792.648","36663.048","—","—","879.667","—","—","—","—","—","—","—","—","—","—","—","—","—","—","—","—","—","—","—","—"] },
-];
-
 const MONTHLY_DAILY: Row[] = [
   ["01日","1029.295","—","47.036","44.158","484.027","—","—","—","—","—","—","—","—","—","14.609","—","—","23.686","—","107.591","—","11.576","—","-0.417","—"],
   ["02日","1019.479","—","47.077","43.331","479.933","—","—","—","—","—","—","—","—","—","14.481","—","—","23.582","—","107.698","—","12.003","—","-0.423","—"],
@@ -82,14 +72,200 @@ const MONTHLY_SUMMARY: { cls: string; row: Row }[] = [
   { cls: "r-min", row: ["最小值","110.806","79.489","8.995","42.449","53.387","—","—","—","—","—","—","—","—","—","14.389","—","—","9.476","—","56.753","—","5.898","—","-0.423","—"] },
 ];
 
-const ANNUAL_ROWS: Row[] = [
+// 12 个月的基础数据（年报视图直接用全部 12 行；季度视图按季度切片；月视图独立用 MONTHLY_DAILY）
+const MONTHLY_BASE: Row[] = [
   ["1月","36792.648","36663.048","41.026","43.102","484.027","—","—","—","—","—","—","—","—","—","18.234","—","—","21.340","—","106.200","—","11.820","—","-0.312","—"],
   ["2月","28514.320","28390.211","40.812","42.950","412.350","—","—","—","—","—","—","—","—","—","16.781","—","—","20.842","—","105.640","—","11.234","—","-0.305","—"],
   ["3月","31205.480","31082.340","40.210","42.640","396.720","—","—","—","—","—","—","—","—","—","17.453","—","—","20.456","—","105.180","—","11.456","—","-0.298","—"],
   ["4月","25235.242","25182.951","41.026","43.102","484.027","—","—","—","—","—","—","—","—","—","39.345","—","—","19.643","—","105.094","—","11.143","—","-0.307","—"],
   ["5月","11557.406","11480.097","40.022","42.518","395.640","—","—","—","—","—","—","—","—","—","36.132","—","—","20.034","—","104.158","—","12.003","—","-0.292","—"],
-  ["6月","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--","--"],
+  ["6月","27894.530","27812.408","40.611","42.901","404.310","—","—","—","—","—","—","—","—","—","17.012","—","—","20.180","—","104.811","—","11.342","—","-0.301","—"],
+  ["7月","33450.910","33332.140","41.388","43.220","438.940","—","—","—","—","—","—","—","—","—","18.105","—","—","20.760","—","105.382","—","11.640","—","-0.304","—"],
+  ["8月","34780.225","34651.082","41.602","43.435","447.812","—","—","—","—","—","—","—","—","—","18.392","—","—","20.985","—","105.518","—","11.712","—","-0.305","—"],
+  ["9月","30615.118","30498.701","40.918","42.890","415.220","—","—","—","—","—","—","—","—","—","17.642","—","—","20.508","—","105.038","—","11.502","—","-0.302","—"],
+  ["10月","29013.487","28902.115","40.502","42.730","403.118","—","—","—","—","—","—","—","—","—","17.298","—","—","20.310","—","104.872","—","11.418","—","-0.300","—"],
+  ["11月","27450.318","27340.812","40.215","42.531","389.405","—","—","—","—","—","—","—","—","—","16.985","—","—","20.105","—","104.610","—","11.328","—","-0.298","—"],
+  ["12月","30912.564","30801.219","41.105","43.087","422.184","—","—","—","—","—","—","—","—","—","17.812","—","—","20.642","—","105.218","—","11.580","—","-0.303","—"],
 ];
+
+// 月份索引 0..4（1-5 月）在当前年（2026）已有真实数据；6 月起仍未发生 → 视图层换成 "--"
+const FUTURE_MONTH_IDX_2026 = 5; // 0-indexed; 5 = 6月
+
+function placeholderMonthRow(monthIdx: number): Row {
+  return [`${monthIdx + 1}月`, ...Array(25).fill("--")] as Row;
+}
+
+function placeholderDayRow(day: number): Row {
+  return [`${String(day).padStart(2, "0")}日`, ...Array(25).fill("--")] as Row;
+}
+
+// ─── Period helpers ──────────────────────────────────────────────────────────
+
+function parseYear(period: string): number {
+  const m = period.match(/(\d{4})年/);
+  return m ? Number(m[1]) : 2026;
+}
+
+function parseQuarter(period: string): { year: number; q: 1 | 2 | 3 | 4 } {
+  const year = parseYear(period);
+  if (period.includes("第一")) return { year, q: 1 };
+  if (period.includes("第二")) return { year, q: 2 };
+  if (period.includes("第三")) return { year, q: 3 };
+  return { year, q: 4 };
+}
+
+function parseMonth(period: string): { year: number; month: number } {
+  const year = parseYear(period);
+  const m = period.match(/(\d{2})月/);
+  return { year, month: m ? Number(m[1]) : 1 };
+}
+
+// 该月份是否「尚未发生」（仅对当前年 2026 的 6 月及以后判定 true）
+function isFutureMonth(year: number, monthIdx0: number): boolean {
+  return year === 2026 && monthIdx0 >= FUTURE_MONTH_IDX_2026;
+}
+
+// ─── Data scaling (让不同年/季度/月/排放口 显示不同的数值) ──────────────────
+
+// 排放口 01 与 02 的全局缩放：01 偏低
+function outletMultiplier(outlet: string): number {
+  return outlet === "废气排放口01" ? 0.91 : 1.0;
+}
+
+// 年份缩放：越久远，污染因子越高（设备/管控逐年优化）
+function yearMultiplier(year: number): number {
+  if (year >= 2026) return 1.0;
+  if (year === 2025) return 1.06;
+  if (year === 2024) return 1.13;
+  return 1.21;
+}
+
+function scaleNumStr(v: string, m: number): string {
+  if (v === DASH || v === "--" || !v) return v;
+  if (v.startsWith("__warn__")) return v;
+  const num = Number(v);
+  if (!Number.isFinite(num)) return v;
+  const dotIdx = v.indexOf(".");
+  const decimals = dotIdx >= 0 ? v.length - dotIdx - 1 : 0;
+  return (num * m).toFixed(decimals);
+}
+
+function scaleRow(row: Row, m: number): Row {
+  const [label, ...cols] = row;
+  return [label, ...cols.map((v) => scaleNumStr(v, m))] as Row;
+}
+
+// 给定一组数据列（每行 25 列），计算平均/最大/最小 摘要行（按数值列）
+function buildSummary(rows: Row[]): { cls: string; row: Row }[] {
+  const colCount = 25;
+  const stats = Array.from({ length: colCount }, () => ({ sum: 0, n: 0, max: -Infinity, min: Infinity, decimals: 0, anyNumber: false }));
+  for (const r of rows) {
+    for (let i = 0; i < colCount; i++) {
+      const v = r[i + 1];
+      if (!v || v === DASH || v === "--" || (typeof v === "string" && v.startsWith("__warn__"))) continue;
+      const num = Number(v);
+      if (!Number.isFinite(num)) continue;
+      stats[i].sum += num;
+      stats[i].n += 1;
+      if (num > stats[i].max) stats[i].max = num;
+      if (num < stats[i].min) stats[i].min = num;
+      const dotIdx = v.indexOf(".");
+      const dec = dotIdx >= 0 ? v.length - dotIdx - 1 : 0;
+      if (dec > stats[i].decimals) stats[i].decimals = dec;
+      stats[i].anyNumber = true;
+    }
+  }
+  const fmt = (n: number, d: number) => n.toFixed(d);
+  const avg = stats.map((s) => (s.anyNumber ? fmt(s.sum / s.n, s.decimals) : DASH));
+  const max = stats.map((s) => (s.anyNumber ? fmt(s.max, s.decimals) : DASH));
+  const min = stats.map((s) => (s.anyNumber ? fmt(s.min, s.decimals) : DASH));
+  return [
+    { cls: "r-avg", row: ["平均值", ...avg] as Row },
+    { cls: "r-max", row: ["最大值", ...max] as Row },
+    { cls: "r-min", row: ["最小值", ...min] as Row },
+  ];
+}
+
+// 计算季度排放总量行（仅汇总「累计流量」「累计修正流量」与三个排放量列）
+function buildQuarterTotal(rows: Row[]): { cls: string; row: Row } {
+  const colCount = 25;
+  // 索引 0..24 对应数据列；总量行只填特定几列
+  const totalCols: string[] = Array(colCount).fill(DASH);
+  const sumIdx = [0, 1, 4]; // 累计流量、累计修正流量、二氧化硫上限值排放量
+  for (const i of sumIdx) {
+    let s = 0;
+    let dec = 0;
+    let any = false;
+    for (const r of rows) {
+      const v = r[i + 1];
+      if (!v || v === DASH || v === "--") continue;
+      const num = Number(v);
+      if (!Number.isFinite(num)) continue;
+      s += num;
+      any = true;
+      const dotIdx = v.indexOf(".");
+      const d = dotIdx >= 0 ? v.length - dotIdx - 1 : 0;
+      if (d > dec) dec = d;
+    }
+    totalCols[i] = any ? s.toFixed(dec) : DASH;
+  }
+  return { cls: "r-total", row: ["季度排放总量（吨）", ...totalCols] as Row };
+}
+
+// 构建给定 outlet/period 的表格行
+function buildRows(outlet: string, periodType: PeriodType, period: string): { cls?: string; row: Row }[] {
+  const om = outletMultiplier(outlet);
+
+  if (periodType === "year") {
+    const year = parseYear(period);
+    const ym = yearMultiplier(year);
+    const m = om * ym;
+    const monthRows: Row[] = MONTHLY_BASE.map((base, idx) => {
+      if (isFutureMonth(year, idx)) return placeholderMonthRow(idx);
+      return scaleRow(base, m);
+    });
+    const filled = monthRows.filter((r) => r[1] !== "--");
+    return [
+      ...monthRows.map((r) => ({ row: r })),
+      ...buildSummary(filled),
+    ];
+  }
+
+  if (periodType === "quarter") {
+    const { year, q } = parseQuarter(period);
+    const ym = yearMultiplier(year);
+    const m = om * ym;
+    const start = (q - 1) * 3;
+    const monthRows: Row[] = [start, start + 1, start + 2].map((idx) => {
+      if (isFutureMonth(year, idx)) return placeholderMonthRow(idx);
+      return scaleRow(MONTHLY_BASE[idx], m);
+    });
+    const filled = monthRows.filter((r) => r[1] !== "--");
+    return [
+      ...monthRows.map((r) => ({ row: r })),
+      ...buildSummary(filled),
+      buildQuarterTotal(filled),
+    ];
+  }
+
+  // month
+  const { year, month } = parseMonth(period);
+  const ym = yearMultiplier(year);
+  const m = om * ym;
+  if (isFutureMonth(year, month - 1)) {
+    // 该月尚未发生：生成 30 行占位
+    const days = Array.from({ length: 30 }, (_, i) => placeholderDayRow(i + 1));
+    return [
+      ...days.map((r) => ({ row: r })),
+      { cls: "r-avg", row: ["平均值", ...Array(25).fill("--")] as Row },
+      { cls: "r-max", row: ["最大值", ...Array(25).fill("--")] as Row },
+      { cls: "r-min", row: ["最小值", ...Array(25).fill("--")] as Row },
+    ];
+  }
+  const daily = MONTHLY_DAILY.map((r) => scaleRow(r, m));
+  const summary = MONTHLY_SUMMARY.map((s) => ({ cls: s.cls, row: scaleRow(s.row, m) }));
+  return [...daily.map((r) => ({ row: r })), ...summary];
+}
 
 // ─── Header column groups (data columns 1..25) ────────────────────────────────
 
@@ -237,51 +413,36 @@ export default function ReportPage() {
   }
   function confirmPeriod() { setPeriod(draftPeriod); setSheet(null); }
 
-  const tableRows = useMemo(() => {
-    if (periodType === "quarter") return QUARTER_ROWS;
-    if (periodType === "month") {
-      return [
-        ...MONTHLY_DAILY.map((r) => ({ row: r })),
-        ...MONTHLY_SUMMARY.map((s) => ({ row: s.row, cls: s.cls })),
-      ];
-    }
-    // year
-    return [
-      ...ANNUAL_ROWS.map((r) => ({ row: r })),
-      { cls: "r-avg", row: ["平均值", ...Array(25).fill(DASH)] as Row },
-      { cls: "r-max", row: ["最大值","36792.648", ...Array(24).fill(DASH)] as Row },
-      { cls: "r-min", row: ["最小值","11557.406", ...Array(24).fill(DASH)] as Row },
-    ];
-  }, [periodType]);
+  const tableRows = useMemo(
+    () => buildRows(outlet, periodType, period),
+    [outlet, periodType, period],
+  );
 
   function handleExport() {
-    type SheetJS = {
-      utils: {
-        aoa_to_sheet: (aoa: unknown[][]) => Record<string, unknown>;
-        book_new: () => Record<string, unknown>;
-        book_append_sheet: (wb: Record<string, unknown>, ws: Record<string, unknown>, name: string) => void;
-      };
-      writeFile: (wb: Record<string, unknown>, filename: string) => void;
-    };
-    const w = window as unknown as { XLSX?: SheetJS };
-    const XLSX = w.XLSX;
-    if (!XLSX) {
-      const s = document.createElement("script");
-      s.src = "https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js";
-      s.onload = handleExport;
-      document.head.appendChild(s);
-      return;
-    }
-    const filename = `监测报表_${outlet}_${period}.xlsx`;
+    // 直接生成 CSV：Excel/WPS 双击即可打开，且不依赖任何外部资源（内网友好）
     const H1 = ["时间","流量（万标立方米）","","二氧化硫（毫克/立方米）","","","","","","氮氧化物（毫克/立方米）","","","","","","氨含量（百分比）","","","烟气流速（米/秒）","","烟气温度（摄氏度）","","烟气湿度（百分比）","","烟气压力（千帕）",""];
-    const H2 = ["","累计流量","累计修正流量","上限值","","","修正值","","","上限值","","","修正值","","","监测值","修正值","豁免值","监测值","修正值","监测值","修正值","监测值","修正值","监测值","修正值"];
-    const H3 = ["","","","实测值","折算值","排放量（千克）","实测值","度/邻后折算值","排放量（千克）","实测值","折算值","排放量（千克）","实测值","度/邻后折算值","排放量（千克）","","","","","","","","","","",""];
-    const data = tableRows.map(({ row }) => row.map(stripCell));
-    const aoa = [H1, H2, H3, ...data];
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, period.slice(0, 31));
-    XLSX.writeFile(wb, filename);
+    const H2 = ["","累计流量","累计修正流量","SO₂上限值-实测值","SO₂上限值-折算值","SO₂上限值-排放量(kg)","SO₂修正值-实测值","SO₂修正值-折算值","SO₂修正值-排放量(kg)","NOx上限值-实测值","NOx上限值-折算值","NOx上限值-排放量(kg)","NOx修正值-实测值","NOx修正值-折算值","NOx修正值-排放量(kg)","NH₃-监测值","NH₃-修正值","NH₃-豁免值","流速-监测值","流速-修正值","温度-监测值","温度-修正值","湿度-监测值","湿度-修正值","压力-监测值","压力-修正值"];
+
+    const escCell = (v: string) => {
+      const s = stripCell(v).replace(/\r?\n/g, " ");
+      if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    const lines = [H1, H2, ...tableRows.map(({ row }) => row.map(stripCell))]
+      .map((r) => r.map(escCell).join(","))
+      .join("\r\n");
+
+    // 加 UTF-8 BOM，避免 Excel 直接打开时中文乱码
+    const blob = new Blob(["﻿" + lines], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `监测报表_${outlet}_${period}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   return (

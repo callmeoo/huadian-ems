@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, FileText, Search, X } from "lucide-react";
 
-type Category = "all" | "national" | "group" | "listed";
+type Category = "all" | "group" | "listed";
 
 const FILES = [
   { name: "华电集团环境保护管理办法（2024修订版）", date: "2024-03", size: "2.1 MB", cat: "group" },
@@ -28,14 +28,12 @@ const countOf = (cat: Exclude<Category, "all">) =>
 
 const TABS: { key: Category; label: string; count: number }[] = [
   { key: "all", label: "全部", count: FILES.length },
-  { key: "national", label: "全国", count: countOf("national") },
   { key: "group", label: "集团", count: countOf("group") },
-  { key: "listed", label: "上市公司", count: countOf("listed") },
+  { key: "listed", label: "上级公司", count: countOf("listed") },
 ];
 
 const ICON_COLOR: Record<Category, { bg: string; fg: string }> = {
   all:      { bg: "#e6f4ff", fg: "#0d52c4" },
-  national: { bg: "#f0fff4", fg: "#389e0d" },
   group:    { bg: "#e6f4ff", fg: "#0d52c4" },
   listed:   { bg: "#f5f0ff", fg: "#531dab" },
 };
@@ -71,6 +69,7 @@ export default function InternalFolderPage() {
             backgroundImage: "radial-gradient(circle, rgba(100,200,255,0.22) 1px, transparent 1px)",
             backgroundSize: "22px 22px",
             opacity: 0.4,
+            pointerEvents: "none",
           }}
         />
         <div
@@ -81,6 +80,7 @@ export default function InternalFolderPage() {
             width: 200,
             height: 200,
             background: "radial-gradient(circle, rgba(50,150,255,0.18) 0%, transparent 70%)",
+            pointerEvents: "none",
           }}
         />
         <div style={{ position: "relative", zIndex: 1 }}>
