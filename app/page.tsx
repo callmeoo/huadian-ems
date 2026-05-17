@@ -10,7 +10,6 @@ import {
   Bell, BookOpen, ClipboardList, HardDrive, Package,
   FileCheck2,
 } from "lucide-react";
-import { RECTIFICATIONS } from "@/lib/rectification/mock";
 
 type WorkspaceModule = {
   id: string;
@@ -64,10 +63,6 @@ const COLOR_MAP: Record<string, { bg: string; icon: string }> = {
 
 type AlertType = "all" | "warn" | "over" | "limit" | "miss";
 
-// 与 lib/rectification/mock.ts 中 NOW 保持一致 — 7 日内未闭环风险数
-const RISK_NOW = new Date("2026-05-17T12:00:00");
-const RISK_WINDOW_MS = 7 * 24 * 3600 * 1000;
-
 const NOTIFICATIONS = [
   {
     id: 1,
@@ -105,16 +100,6 @@ export default function HomePage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [moduleIds, setModuleIds] = useState<string[]>(() => ALL_MODULES.map((m) => m.id));
   const hydratedRef = useRef(false);
-
-  // 7 日内未闭环风险数（筛选交互已下放到 /rectification 页面）
-  const riskCount = useMemo(() => {
-    const cutoff = RISK_NOW.getTime() - RISK_WINDOW_MS;
-    return RECTIFICATIONS.filter((r) => {
-      if (r.status === "closed") return false;
-      const found = new Date(r.discoveredAt.replace(" ", "T")).getTime();
-      return found >= cutoff;
-    }).length;
-  }, []);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -260,32 +245,6 @@ export default function HomePage() {
 
       {/* Body */}
       <div style={{ padding: "0 14px 80px" }}>
-
-        {/* Risk highlight card — 7 日内重点风险问题，点击进 /rectification 用页内筛选 */}
-        <div style={{ paddingTop: 14 }}>
-          <Link
-            href="/rectification"
-            style={{
-              display: "flex", alignItems: "center", textDecoration: "none", color: "inherit",
-              background: "#fff", borderRadius: 12, padding: "14px",
-              boxShadow: "0 2px 8px rgba(10,69,149,0.06)",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, color: "var(--text-1)", fontWeight: 500 }}>7 日内重点风险问题</div>
-              <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>
-                {riskCount === 0 ? "近期无异常 · 状态良好" : `共 ${riskCount} 条待处理 · 点击查看详情`}
-              </div>
-            </div>
-            <div style={{
-              minWidth: 34, height: 26, padding: "0 11px", borderRadius: 13,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 700, fontSize: 13,
-              background: riskCount === 0 ? "#f0fff4" : "#fff1f0",
-              color: riskCount === 0 ? "#389e0d" : "#cf1322",
-            }}>{riskCount}</div>
-          </Link>
-        </div>
 
         {/* Notification section */}
         <div style={{ paddingTop: 14 }}>
