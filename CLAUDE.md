@@ -419,6 +419,62 @@ Section 标题右侧可选：「查看全部 ›」`color: #1677ff` / 展开收�
 - 标准录入：[app/verification/standards/page.tsx](app/verification/standards/page.tsx)
 - 共享组件 / 类型 / mock 数据：[components/verification/](components/verification/)
 
+### 环保整改（/rectification）
+
+> 这一模块负责把**任何来源**发现的环保问题做成一张「整改单」，全程线上化记录，直到验收销号闭环。目的是把散落在各部门 U 盘/微信群的整改材料归一到一个台账里。
+
+**核心实体：整改单（RectificationItem）**
+
+字段：单号、标题、状态、严重程度、问题类型、问题来源、来源编号、发现时间、问题描述、涉及点位、整改措施、责任部门、责任人、要求完成时间、实际完成时间、附件列表、验收人、验收时间、验收意见。
+
+#### 6 步流程（详情页严格按这个顺序）
+
+1. **问题来源**：来源（环保局检查 / 内部巡查 / 第三方检测 / 监测系统 / 其他）+ 发现时间 + 来源编号（检查文号、报告编号、工单号等）
+2. **问题内容**：详细描述 + 涉及点位
+3. **整改措施**：方案描述 + 责任部门 + 责任人（空 = 未制定 → 触发滞后预警）
+4. **整改时间**：要求完成时间 + 实际完成时间 + 剩余天数
+5. **资料存档**：附件列表（整改前/中/后照片、报告等），支持上传
+6. **验收闭环**：验收人确认 → 销号（关键闭环动作，由具备验收权限的角色操作）
+
+#### 状态机
+
+`pending`（待制定）/ `in-progress`（整改中）/ `review`（待验收）/ `closed`（已闭环）/ `overdue`（已超期）
+
+**关键规则**：`overdue` **不是手工设置**，而是 `effectiveStatus()` 从 `pending` / `in-progress` 中推导出的——`dueAt < now && status != closed` 即为已超期。不要做"自动超期 → 自动改写 status 字段"这种事，否则状态会污染原始数据。
+
+#### 超期 / 滞后提醒规则（铁律）
+
+| 触发条件 | 提醒类型 | 颜色 |
+|---|---|---|
+| `dueAt < now` 且 `status != closed` | **已超期** | 红 `#cf1322` |
+| 未填整改措施 且 `now ≥ 发现时间 + (要求时间 - 发现时间) × 50%` | **滞后预警** | 橙 `#d46b08` |
+| `dueAt - now ≤ 3 天` 且 `status != closed` | **即将到期**（卡片倒计时变橙，不弹窗） | 橙 `#d46b08` |
+
+滞后预警的判定纯函数是 [lib/rectification/mock.ts](lib/rectification/mock.ts) 里的 `isLagWarning()`，接 DB 后逻辑搬到 API 层即可。
+
+#### 与其他模块的边界（重要，不要重复造）
+
+- **超标管控** `/control`：处理"实时超标值"的工艺侧动作（调整工况、阻断）。整改是后续的"档案 + 闭环"。
+- **督办查阅** `/supervise`：未来用于跨部门任务督办。环保整改聚焦"一个问题的全过程"，督办聚焦"一批任务的进度"。
+- **第三方检测** `/verification`：核验报告本身的合规性。核验不通过的报告会**派生一张整改单**到本模块（未来通过 `sourceDetail` 关联）。
+
+工作台模块入口色：`c-orange`（整改本质是预警性事物，黄色警告语义最贴近）。
+
+#### 关键文件位置
+
+- 列表 + 顶部统计 + 筛选：[app/rectification/page.tsx](app/rectification/page.tsx)
+- 详情 6 步流程：[app/rectification/[id]/page.tsx](app/rectification/%5Bid%5D/page.tsx)
+- 类型 / mock 数据 / 状态推导函数：[lib/rectification/mock.ts](lib/rectification/mock.ts)
+- 首页提醒卡（整改中 / 待验收 / 已超期）：在 [app/page.tsx](app/page.tsx) 的「环保整改」section，依赖 `buildStats()`
+
+#### 接 DB 时的迁移点（提前留好接口）
+
+- `RECTIFICATIONS` 静态数组 → Prisma `Rectification` 表查询
+- `effectiveStatus()` / `isLagWarning()` 纯函数保持纯函数，搬到 `lib/rectification/derive.ts`
+- 新建表单页 `app/rectification/new/page.tsx`（当前列表页 FAB 按钮占位）
+- 附件上传走 `/api/upload` + 对象存储（内网部署确认存储方案后再做）
+- 验收销号写 `ReviewLog`（与 verification 模块共用 ReviewLog 表）
+
 ### 本地开发数据库（重要）
 
 **项目部署目标依然是 PostgreSQL**，但本地开发用 **SQLite**（`prisma/dev.db`）简化环境，不需要装 Postgres 或 Docker。

@@ -13,8 +13,8 @@ import RoutineList, {
   type RoutineFilter,
   type RoutineStat,
 } from "@/components/verification/RoutineList";
+import type { PeriodValue } from "@/components/verification/PeriodPicker";
 import type {
-  QuarterType,
   ReportCard,
   RoutineTask,
 } from "@/components/verification/types";
@@ -27,8 +27,14 @@ export default function VerificationPage() {
   // Third-party filter state
   const [tpType, setTpType] = useState<ThirdPartyFilter>("all");
   const [tpStat, setTpStat] = useState<ThirdPartyStat>("all");
-  const [tpYear, setTpYear] = useState(2026);
-  const [tpQuarter, setTpQuarter] = useState<QuarterType>("Q1");
+  const [tpPeriod, setTpPeriod] = useState<PeriodValue>({
+    type: "quarter",
+    year: 2026,
+    month: 1,
+    quarter: "Q1",
+    rangeStart: "2026-01-01",
+    rangeEnd: "2026-03-31",
+  });
 
   // Routine filter state
   const [rtPeriod, setRtPeriod] = useState<RoutineFilter>("all");
@@ -178,10 +184,8 @@ export default function VerificationPage() {
           onTypeFilterChange={setTpType}
           statFilter={tpStat}
           onStatFilterChange={setTpStat}
-          year={tpYear}
-          onYearChange={setTpYear}
-          quarter={tpQuarter}
-          onQuarterChange={setTpQuarter}
+          period={tpPeriod}
+          onPeriodChange={setTpPeriod}
         />
       ) : (
         <RoutineList

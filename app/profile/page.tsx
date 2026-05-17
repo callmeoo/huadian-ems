@@ -10,7 +10,6 @@ import {
   ArrowUpCircle,
   FileText,
   Award,
-  PhoneCall,
   ChevronRight,
 } from "lucide-react";
 import TabBar from "@/components/layout/TabBar";
@@ -155,13 +154,6 @@ const GROUP3: MenuItem[] = [
     iconColor: "#8090a8",
     label: "企业认证资料",
     showChevron: true,
-  },
-  {
-    Icon: PhoneCall,
-    iconBg: "#f5f5f5",
-    iconColor: "#8090a8",
-    label: "服务监督专线",
-    value: "400-996-1917",
   },
 ];
 

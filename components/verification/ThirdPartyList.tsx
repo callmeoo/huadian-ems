@@ -10,12 +10,14 @@ import {
   AlertTriangle,
   Upload,
   ChevronRight,
+  ChevronDown,
   Check,
   BookOpen,
+  X,
 } from "lucide-react";
 import { TypeIconBox, StatusBadge, DueTag, NextDateText } from "./Badges";
-import PeriodPicker from "./PeriodPicker";
-import type { QuarterType, ReportCard, ReportType } from "./types";
+import PeriodPicker, { toWindow, type PeriodValue } from "./PeriodPicker";
+import type { ReportCard, ReportType } from "./types";
 
 export type ThirdPartyFilter = "all" | ReportType;
 export type ThirdPartyStat = "all" | "pending" | "fail" | "urgent";
@@ -26,13 +28,11 @@ export interface ThirdPartyListProps {
   onTypeFilterChange: (f: ThirdPartyFilter) => void;
   statFilter: ThirdPartyStat;
   onStatFilterChange: (s: ThirdPartyStat) => void;
-  year: number;
-  onYearChange: (y: number) => void;
-  quarter: QuarterType;
-  onQuarterChange: (q: QuarterType) => void;
+  period: PeriodValue;
+  onPeriodChange: (v: PeriodValue) => void;
 }
 
-const FILTERS: {
+const TYPE_OPTIONS: {
   key: ThirdPartyFilter;
   label: string;
   Icon?: React.ComponentType<{ size: number; color?: string }>;
@@ -49,14 +49,13 @@ export default function ThirdPartyList({
   onTypeFilterChange,
   statFilter,
   onStatFilterChange,
-  year,
-  onYearChange,
-  quarter,
-  onQuarterChange,
+  period,
+  onPeriodChange,
 }: ThirdPartyListProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success">("idle");
+  const [typeMenuOpen, setTypeMenuOpen] = useState(false);
 
   const source = reports ?? [];
   let filtered = typeFilter === "all" ? source : source.filter((r) => r.type === typeFilter);
@@ -64,6 +63,16 @@ export default function ThirdPartyList({
   else if (statFilter === "fail") filtered = filtered.filter((r) => r.status === "fail");
   else if (statFilter === "urgent")
     filtered = filtered.filter((r) => r.dueLevel === "very-soon" || r.dueLevel === "soon");
+
+  // 按周期时间窗口过滤（按报告日期 date 落在 [winStart, winEnd] 内）
+  const [winStart, winEnd] = toWindow(period);
+  filtered = filtered.filter((r) => r.date >= winStart && r.date <= winEnd);
+
+  // 排序：不合格 → 合格 → 待核验（同状态保持原顺序）
+  const STATUS_ORDER: Record<ReportCard["status"], number> = { fail: 0, pass: 1, pending: 2 };
+  filtered = [...filtered].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
+
+  const currentType = TYPE_OPTIONS.find((o) => o.key === typeFilter) ?? TYPE_OPTIONS[0];
 
   const handleUpload = () => fileInputRef.current?.click();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,59 +108,106 @@ export default function ThirdPartyList({
         </div>
       </div>
 
-      {/* Filter pills + period picker */}
+      {/* 筛选行：左 = 类型 + 周期；右 = 核验标准（独立一块） */}
       <div
         style={{
           padding: "12px 14px 0",
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
           gap: 8,
         }}
       >
-        <div
+        {/* 左侧组：类型 + 周期 紧挨 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={() => setTypeMenuOpen(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 5,
+              background: "#fff", border: "1px solid #e0e7ef",
+              borderRadius: 8, padding: "5px 12px",
+              fontSize: 12, color: "#1a1a1a", fontWeight: 500,
+              cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+            }}
+          >
+            {currentType.Icon && <currentType.Icon size={13} color="#6b7a8c" />}
+            {currentType.label}
+            <ChevronDown size={12} color="#6b7a8c" />
+          </button>
+
+          <PeriodPicker value={period} onChange={onPeriodChange} />
+        </div>
+
+        {/* 右侧：核验标准（独立块，浅蓝填充 + 内框，视觉上跟筛选区分离） */}
+        <Link
+          href="/verification/standards"
           style={{
             display: "flex",
-            gap: 8,
-            overflowX: "auto",
-            flex: 1,
-            scrollbarWidth: "none",
+            alignItems: "center",
+            gap: 5,
+            background: "#e6f4ff",
+            color: "#0d52c4",
+            border: "1px solid #bae0ff",
+            borderRadius: 8,
+            padding: "5px 12px",
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+            textDecoration: "none",
           }}
         >
-          {FILTERS.map(({ key, label, Icon }) => {
-            const isActive = typeFilter === key;
-            return (
-              <button
-                key={key}
-                onClick={() => onTypeFilterChange(key)}
-                style={{
-                  padding: "5px 14px",
-                  borderRadius: 20,
-                  fontSize: 13,
-                  border: isActive ? "1px solid #0d52c4" : "1px solid #e0e7ef",
-                  background: isActive ? "#0d52c4" : "#fff",
-                  color: isActive ? "#fff" : "#6b7a8c",
-                  fontWeight: isActive ? 600 : 400,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                }}
-              >
-                {Icon && <Icon size={13} color={isActive ? "#fff" : "#6b7a8c"} />}
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        <PeriodPicker
-          year={year}
-          quarter={quarter}
-          onYearChange={onYearChange}
-          onQuarterChange={onQuarterChange}
-        />
+          <BookOpen size={13} color="#0d52c4" />
+          核验标准
+        </Link>
       </div>
+
+      {/* 类型选择 sheet */}
+      {typeMenuOpen && (
+        <>
+          <div
+            onClick={() => setTypeMenuOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 200 }}
+          />
+          <div style={{
+            position: "fixed", left: 0, right: 0, bottom: 0,
+            background: "#fff", borderRadius: "16px 16px 0 0",
+            zIndex: 201, paddingBottom: 20,
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "16px 20px 12px", borderBottom: "1px solid #ebeef2",
+            }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>选择监测类型</span>
+              <button onClick={() => setTypeMenuOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8090a8", display: "flex" }}>
+                <X size={20} />
+              </button>
+            </div>
+            {TYPE_OPTIONS.map(({ key, label, Icon }) => {
+              const active = typeFilter === key;
+              return (
+                <div
+                  key={key}
+                  onClick={() => { onTypeFilterChange(key); setTypeMenuOpen(false); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "14px 20px", fontSize: 15,
+                    color: active ? "#1677ff" : "#1a1a1a",
+                    fontWeight: active ? 600 : 400,
+                    background: active ? "#f0f7ff" : "#fff",
+                    borderBottom: "1px solid #f5f7fa", cursor: "pointer",
+                  }}
+                >
+                  {Icon && <Icon size={16} color={active ? "#1677ff" : "#6b7a8c"} />}
+                  <span style={{ flex: 1 }}>{label}</span>
+                  {active && <Check size={18} color="#1677ff" />}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* List header */}
       <div
@@ -193,26 +249,6 @@ export default function ThirdPartyList({
           )}
         </div>
         <div style={{ display: "flex", gap: 6 }}>
-          <Link
-            href="/verification/standards"
-            style={{
-              background: "#fff",
-              color: "#0d52c4",
-              border: "1px solid #d6e4ff",
-              borderRadius: 16,
-              padding: "5px 10px",
-              fontSize: 12,
-              fontWeight: 500,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              textDecoration: "none",
-            }}
-          >
-            <BookOpen size={12} color="#0d52c4" />
-            核验标准
-          </Link>
           <button
             onClick={handleUpload}
             style={{

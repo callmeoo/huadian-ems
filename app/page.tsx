@@ -5,10 +5,12 @@ import Link from "next/link";
 import TabBar from "@/components/layout/TabBar";
 import {
   Zap, Building2, Activity, AlertTriangle, Siren,
-  PieChart, FileText, ShieldCheck, BarChart3, BookmarkCheck,
-  LayoutGrid, Check, Plus, Gauge, ClipboardCheckIcon, SlidersHorizontal,
+  PieChart, FileText, ShieldCheck, BarChart3,
+  LayoutGrid, Check, Plus, Gauge, SlidersHorizontal,
   Bell, BookOpen, ClipboardList, HardDrive, Package,
+  FileCheck2, ChevronDown,
 } from "lucide-react";
+import { RECTIFICATIONS } from "@/lib/rectification/mock";
 
 type WorkspaceModule = {
   id: string;
@@ -19,28 +21,27 @@ type WorkspaceModule = {
 };
 
 const ALL_MODULES: WorkspaceModule[] = [
-  // 行 1
+  // 行 1：企业 / 超标三件套
   { id: "enterprise",   name: "企业档案",   icon: <Building2 />,          color: "c-cyan",   href: "/enterprise" },
   { id: "anomaly",      name: "超标异常",   icon: <AlertTriangle />,      color: "c-orange", href: "/anomaly" },
-  { id: "stats",        name: "数据统计",   icon: <PieChart />,           color: "c-green",  href: "/stats" },
+  { id: "warning",      name: "超标预警",   icon: <Siren />,              color: "c-red",    href: "/warning" },
   // 行 2
   { id: "control",      name: "超标管控",   icon: <ShieldCheck />,        color: "c-red",    href: "/control" },
-  { id: "emission",     name: "排放量统计", icon: <BarChart3 />,          color: "c-green",  href: "/emission" },
-  { id: "report",       name: "监测报表",   icon: <FileText />,           color: "c-teal",   href: "/report" },
-  // 行 3
-  { id: "bookmark",     name: "标记查阅",   icon: <BookmarkCheck />,      color: "c-blue",   href: "/bookmark" },
-  { id: "gauge",        name: "有效传输率", icon: <Gauge />,              color: "c-teal",   href: "/gauge" },
-  { id: "notification", name: "工作通知",   icon: <Bell />,               color: "c-red",    href: "/notifications" },
-  // 行 4
-  { id: "verification", name: "第三方检测", icon: <ClipboardList />,      color: "c-purple", href: "/verification" },
   { id: "monitor",      name: "实时监控",   icon: <Activity />,           color: "c-blue",   href: "/monitor" },
-  { id: "settings",     name: "报警设置",   icon: <SlidersHorizontal />,  color: "c-gray",   href: "/settings" },
-  // 行 5
-  { id: "warning",      name: "超标预警",   icon: <Siren />,              color: "c-red",    href: "/warning" },
-  { id: "supervise",    name: "督办查阅",   icon: <ClipboardCheckIcon />, color: "c-purple", href: "/supervise" },
+  { id: "emission",     name: "排放量统计", icon: <BarChart3 />,          color: "c-green",  href: "/emission" },
+  // 行 3：报表与数据
+  { id: "report",       name: "监测报表",   icon: <FileText />,           color: "c-teal",   href: "/report" },
+  { id: "stats",        name: "数据统计",   icon: <PieChart />,           color: "c-green",  href: "/stats" },
+  { id: "gauge",        name: "有效传输率", icon: <Gauge />,              color: "c-teal",   href: "/gauge" },
+  // 行 4：通知 / 核验 / 整改
+  { id: "notification", name: "工作通知",   icon: <Bell />,               color: "c-red",    href: "/notifications" },
+  { id: "verification", name: "第三方检测", icon: <ClipboardList />,      color: "c-purple", href: "/verification" },
+  { id: "rectification",name: "环保整改",   icon: <FileCheck2 />,         color: "c-orange", href: "/rectification" },
+  // 行 5：设备 / 备件 / 设置
   { id: "equipment",    name: "设备管理",   icon: <HardDrive />,          color: "c-blue",   href: "/equipment" },
-  // 行 6
   { id: "parts",        name: "备件库",     icon: <Package />,            color: "c-purple", href: "/parts" },
+  { id: "settings",     name: "报警设置",   icon: <SlidersHorizontal />,  color: "c-gray",   href: "/settings" },
+  // 行 6
   { id: "training",     name: "培训考试",   icon: <BookOpen />,           color: "c-teal",   href: "/training" },
 ];
 
@@ -48,7 +49,7 @@ const MODULE_REGISTRY: Record<string, WorkspaceModule> = Object.fromEntries(
   ALL_MODULES.map((m) => [m.id, m]),
 );
 
-const STORAGE_KEY = "workspace.modules.v3";
+const STORAGE_KEY = "workspace.modules.v4";
 
 const COLOR_MAP: Record<string, { bg: string; icon: string }> = {
   "c-blue":   { bg: "#e6f4ff", icon: "#1677ff" },
@@ -62,6 +63,28 @@ const COLOR_MAP: Record<string, { bg: string; icon: string }> = {
 };
 
 type AlertType = "all" | "warn" | "over" | "limit" | "miss";
+
+// ── 风险卡片筛选 ──────────────────────────────────────────────────────────────
+type RiskCategoryFilter = "all" | "air" | "water" | "noise";
+type RiskSourceFilter   = "all" | "epb" | "internal" | "monitor";
+
+const RISK_CATEGORY_OPTIONS: { key: RiskCategoryFilter; label: string }[] = [
+  { key: "all",   label: "全部类型" },
+  { key: "air",   label: "废气" },
+  { key: "water", label: "废水" },
+  { key: "noise", label: "噪声" },
+];
+
+const RISK_SOURCE_OPTIONS: { key: RiskSourceFilter; label: string }[] = [
+  { key: "all",      label: "全部来源" },
+  { key: "epb",      label: "环保局" },
+  { key: "internal", label: "内部巡检" },
+  { key: "monitor",  label: "监测系统" },
+];
+
+// 与 lib/rectification/mock.ts 中 NOW 保持一致
+const RISK_NOW = new Date("2026-05-17T12:00:00");
+const RISK_WINDOW_MS = 7 * 24 * 3600 * 1000;
 
 const NOTIFICATIONS = [
   {
@@ -100,6 +123,27 @@ export default function HomePage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [moduleIds, setModuleIds] = useState<string[]>(() => ALL_MODULES.map((m) => m.id));
   const hydratedRef = useRef(false);
+
+  // Risk card filters
+  const [riskCategory, setRiskCategory] = useState<RiskCategoryFilter>("all");
+  const [riskSource, setRiskSource]     = useState<RiskSourceFilter>("all");
+  const [riskCatOpen, setRiskCatOpen]   = useState(false);
+  const [riskSrcOpen, setRiskSrcOpen]   = useState(false);
+
+  const riskCount = useMemo(() => {
+    const cutoff = RISK_NOW.getTime() - RISK_WINDOW_MS;
+    return RECTIFICATIONS.filter((r) => {
+      if (r.status === "closed") return false;
+      const found = new Date(r.discoveredAt.replace(" ", "T")).getTime();
+      if (found < cutoff) return false;
+      if (riskCategory !== "all" && r.category !== riskCategory) return false;
+      if (riskSource !== "all" && r.source !== riskSource) return false;
+      return true;
+    }).length;
+  }, [riskCategory, riskSource]);
+
+  const riskCatLabel = RISK_CATEGORY_OPTIONS.find((o) => o.key === riskCategory)!.label;
+  const riskSrcLabel = RISK_SOURCE_OPTIONS.find((o) => o.key === riskSource)!.label;
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -246,25 +290,51 @@ export default function HomePage() {
       {/* Body */}
       <div style={{ padding: "0 14px 80px" }}>
 
-        {/* Risk section */}
+        {/* Risk highlight card — 两个下拉筛选 + 风险数 */}
         <div style={{ paddingTop: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <SectionTitle>趋势重点风险</SectionTitle>
-            <span style={{ fontSize: 12, color: "#1677ff", cursor: "pointer" }}>查看全部 ›</span>
-          </div>
           <div style={{
-            background: "#fff", borderRadius: 12, padding: "14px 16px",
-            boxShadow: "0 2px 8px rgba(10,69,149,0.06)", display: "flex", alignItems: "center", cursor: "pointer",
+            background: "#fff", borderRadius: 12, padding: "12px 14px 14px",
+            boxShadow: "0 2px 8px rgba(10,69,149,0.06)",
           }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, color: "var(--text-1)", fontWeight: 500 }}>7 日内重点风险问题</div>
-              <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>近期无异常 · 状态良好</div>
+            {/* 顶部：两个下拉 */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <RiskDropdown
+                label={riskCatLabel}
+                open={riskCatOpen}
+                onToggle={() => { setRiskCatOpen((v) => !v); setRiskSrcOpen(false); }}
+                options={RISK_CATEGORY_OPTIONS}
+                value={riskCategory}
+                onSelect={(k) => { setRiskCategory(k as RiskCategoryFilter); setRiskCatOpen(false); }}
+              />
+              <RiskDropdown
+                label={riskSrcLabel}
+                open={riskSrcOpen}
+                onToggle={() => { setRiskSrcOpen((v) => !v); setRiskCatOpen(false); }}
+                options={RISK_SOURCE_OPTIONS}
+                value={riskSource}
+                onSelect={(k) => { setRiskSource(k as RiskSourceFilter); setRiskSrcOpen(false); }}
+              />
             </div>
-            <div style={{
-              minWidth: 34, height: 26, padding: "0 11px", borderRadius: 13,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 700, fontSize: 13, background: "#f0fff4", color: "#389e0d",
-            }}>0</div>
+
+            {/* 风险数 + 描述：整块跳转到 /rectification（带筛选参数预留） */}
+            <Link
+              href="/rectification"
+              style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "inherit" }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, color: "var(--text-1)", fontWeight: 500 }}>7 日内重点风险问题</div>
+                <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>
+                  {riskCount === 0 ? "近期无异常 · 状态良好" : `共 ${riskCount} 条待处理 · 点击查看详情`}
+                </div>
+              </div>
+              <div style={{
+                minWidth: 34, height: 26, padding: "0 11px", borderRadius: 13,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontWeight: 700, fontSize: 13,
+                background: riskCount === 0 ? "#f0fff4" : "#fff1f0",
+                color: riskCount === 0 ? "#389e0d" : "#cf1322",
+              }}>{riskCount}</div>
+            </Link>
           </div>
         </div>
 
@@ -461,6 +531,78 @@ export default function HomePage() {
           to   { transform: rotate(4deg); }
         }
       `}</style>
+    </div>
+  );
+}
+
+function RiskDropdown<T extends string>({
+  label, open, onToggle, options, value, onSelect,
+}: {
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+  options: { key: T; label: string }[];
+  value: T;
+  onSelect: (k: T) => void;
+}) {
+  return (
+    <div style={{ position: "relative", flex: 1 }}>
+      <button
+        onClick={onToggle}
+        style={{
+          width: "100%",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
+          background: open ? "#f0f7ff" : "#f8fafc",
+          border: `1px solid ${open ? "#1677ff" : "#ebeef2"}`,
+          borderRadius: 8, padding: "6px 10px",
+          fontSize: 12, color: "#1a1a1a", fontWeight: 500,
+          cursor: "pointer", outline: "none",
+        }}
+      >
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+        <ChevronDown
+          size={12}
+          color="#6b7a8c"
+          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s", flexShrink: 0 }}
+        />
+      </button>
+
+      {open && (
+        <>
+          {/* 透明遮罩，点外部关闭 */}
+          <div onClick={onToggle} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+          <div
+            style={{
+              position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+              background: "#fff", borderRadius: 10,
+              boxShadow: "0 6px 20px rgba(10,69,149,0.15)",
+              border: "1px solid #ebeef2",
+              zIndex: 50, overflow: "hidden",
+            }}
+          >
+            {options.map((o) => {
+              const active = o.key === value;
+              return (
+                <div
+                  key={o.key}
+                  onClick={() => onSelect(o.key)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "9px 12px", fontSize: 13,
+                    color: active ? "#1677ff" : "#1a1a1a",
+                    fontWeight: active ? 600 : 400,
+                    background: active ? "#f0f7ff" : "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  {o.label}
+                  {active && <Check size={14} color="#1677ff" />}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
