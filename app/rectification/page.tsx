@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ChevronLeft, SlidersHorizontal, AlertTriangle, Clock, CheckCircle2,
-  Building2, Activity, ClipboardList, Wind, Droplets, Volume2, Trash2,
-  Plus, ChevronRight,
+  Building2, Activity,
+  Plus, ChevronRight, ChevronDown, Check,
 } from "lucide-react";
 import TabBar from "@/components/layout/TabBar";
 import {
@@ -20,7 +20,16 @@ type StatusFilter = "all" | RectificationStatus | "lag";
 type SourceFilter = "all" | RectificationSource;
 type CategoryFilter = "all" | RectificationCategory;
 
-const SOURCE_CHIPS: { key: SourceFilter; label: string }[] = [
+const CATEGORY_OPTIONS: { key: CategoryFilter; label: string }[] = [
+  { key: "all", label: "全部类型" },
+  { key: "air", label: "废气" },
+  { key: "water", label: "废水" },
+  { key: "noise", label: "噪声" },
+  { key: "solid", label: "固废" },
+  { key: "management", label: "管理类" },
+];
+
+const SOURCE_OPTIONS: { key: SourceFilter; label: string }[] = [
   { key: "all", label: "全部来源" },
   { key: "epb", label: "环保局" },
   { key: "internal", label: "内部巡查" },
@@ -28,20 +37,16 @@ const SOURCE_CHIPS: { key: SourceFilter; label: string }[] = [
   { key: "monitor", label: "监测系统" },
 ];
 
-const CATEGORY_CHIPS: { key: CategoryFilter; label: string; Icon: React.ComponentType<{ size: number; color?: string }> }[] = [
-  { key: "all", label: "全部", Icon: ClipboardList },
-  { key: "air", label: "废气", Icon: Wind },
-  { key: "water", label: "废水", Icon: Droplets },
-  { key: "noise", label: "噪声", Icon: Volume2 },
-  { key: "solid", label: "固废", Icon: Trash2 },
-  { key: "management", label: "管理类", Icon: Building2 },
-];
-
 export default function RectificationPage() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [catOpen, setCatOpen] = useState(false);
+  const [srcOpen, setSrcOpen] = useState(false);
+
+  const catLabel = CATEGORY_OPTIONS.find((o) => o.key === categoryFilter)!.label;
+  const srcLabel = SOURCE_OPTIONS.find((o) => o.key === sourceFilter)!.label;
 
   const stats = useMemo(() => buildStats(RECTIFICATIONS), []);
 
@@ -131,52 +136,24 @@ export default function RectificationPage() {
         </div>
       </div>
 
-      {/* 筛选区 */}
-      <div style={{ padding: "12px 14px 0" }}>
-        {/* 类型 chips */}
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8 }}>
-          {CATEGORY_CHIPS.map((c) => {
-            const active = categoryFilter === c.key;
-            return (
-              <button
-                key={c.key}
-                onClick={() => setCategoryFilter(c.key)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
-                  padding: "6px 12px", borderRadius: 16,
-                  background: active ? "#1677ff" : "#fff",
-                  color: active ? "#fff" : "#6b7a8c",
-                  border: `1px solid ${active ? "#1677ff" : "#ebeef2"}`,
-                  fontSize: 12, fontWeight: 500, cursor: "pointer", outline: "none",
-                }}
-              >
-                <c.Icon size={13} />{c.label}
-              </button>
-            );
-          })}
-        </div>
-        {/* 来源 chips */}
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
-          {SOURCE_CHIPS.map((c) => {
-            const active = sourceFilter === c.key;
-            return (
-              <button
-                key={c.key}
-                onClick={() => setSourceFilter(c.key)}
-                style={{
-                  flexShrink: 0,
-                  padding: "5px 11px", borderRadius: 14,
-                  background: active ? "rgba(22,119,255,0.1)" : "transparent",
-                  color: active ? "#1677ff" : "#8090a8",
-                  border: `1px solid ${active ? "rgba(22,119,255,0.3)" : "#ebeef2"}`,
-                  fontSize: 11, cursor: "pointer", outline: "none",
-                }}
-              >
-                {c.label}
-              </button>
-            );
-          })}
-        </div>
+      {/* 筛选区：两个下拉（类型 + 来源） */}
+      <div style={{ padding: "12px 14px 0", display: "flex", gap: 8 }}>
+        <FilterDropdown
+          label={catLabel}
+          open={catOpen}
+          onToggle={() => { setCatOpen((v) => !v); setSrcOpen(false); }}
+          options={CATEGORY_OPTIONS}
+          value={categoryFilter}
+          onSelect={(k) => { setCategoryFilter(k as CategoryFilter); setCatOpen(false); }}
+        />
+        <FilterDropdown
+          label={srcLabel}
+          open={srcOpen}
+          onToggle={() => { setSrcOpen((v) => !v); setCatOpen(false); }}
+          options={SOURCE_OPTIONS}
+          value={sourceFilter}
+          onSelect={(k) => { setSourceFilter(k as SourceFilter); setSrcOpen(false); }}
+        />
       </div>
 
       {/* 列表 */}
@@ -309,6 +286,75 @@ export default function RectificationPage() {
       </button>
 
       <TabBar />
+    </div>
+  );
+}
+
+function FilterDropdown<T extends string>({
+  label, open, onToggle, options, value, onSelect,
+}: {
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+  options: { key: T; label: string }[];
+  value: T;
+  onSelect: (k: T) => void;
+}) {
+  return (
+    <div style={{ position: "relative", flex: 1 }}>
+      <button
+        onClick={onToggle}
+        style={{
+          width: "100%",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
+          background: open ? "#f0f7ff" : "#fff",
+          border: `1px solid ${open ? "#1677ff" : "#ebeef2"}`,
+          borderRadius: 8, padding: "8px 12px",
+          fontSize: 13, color: "#1a1a1a", fontWeight: 500,
+          cursor: "pointer", outline: "none",
+        }}
+      >
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+        <ChevronDown
+          size={13}
+          color="#6b7a8c"
+          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s", flexShrink: 0 }}
+        />
+      </button>
+
+      {open && (
+        <>
+          <div onClick={onToggle} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+          <div style={{
+            position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+            background: "#fff", borderRadius: 10,
+            boxShadow: "0 6px 20px rgba(10,69,149,0.15)",
+            border: "1px solid #ebeef2",
+            zIndex: 50, overflow: "hidden",
+          }}>
+            {options.map((o) => {
+              const active = o.key === value;
+              return (
+                <div
+                  key={o.key}
+                  onClick={() => onSelect(o.key)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "10px 14px", fontSize: 13,
+                    color: active ? "#1677ff" : "#1a1a1a",
+                    fontWeight: active ? 600 : 400,
+                    background: active ? "#f0f7ff" : "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  {o.label}
+                  {active && <Check size={14} color="#1677ff" />}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
